@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <link rel="icon" type="image/png" href="<%= extra.faviconlink %>"/>
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link href="/assets/light/style.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <title><%= extra.servers.title.list %></title>
+        <% if (settings.api.arcio.enabled == true) { %>
+            <script async src="https://arc.io/widget.min.js#<%= settings.api.arcio.widgetid %>"></script>
+        <% } %>
+    </head>
+    <body>
+        <ul style="overflow: hidden;" class="ul">
+            <li style="float:left; margin-top: 12px; margin-left: 10%;"><a href="/" style="font-family: 'Rubik', sans-serif; font-size: 25px"><%= extra.home.name %></a></li>
+            <li style="float:right; margin-right: 20%" class="li">
+                <a href="<%= userinfo ? "/logout" : "/login"%>"><i class="fa fa-<%= userinfo ? "sign-out": "fw fa-user" %>" style="color: gray; margin-top: 10px;"></i></a>
+            </li>
+        </ul>
+        <button style="margin-left: 5%; margin-top: 50px;" class="button" onclick="window.location.href = '/dashboard'">Back</button>
+        <h2 style="margin-left: 5%;">Servers</h2>
+        <% if (settings.api.client.allow.server.create == true) { %>
+            <button class="button" style="margin-left: 5%; width: 40%;" onclick="window.location.href='/servers/new'">Create a new server.</button>
+            <button class="button" style="width: 40%;" onclick="window.location.href='/updateinfo?redirect=servers'">Update your server list.</button>
+        <% } else { %>
+            <button class="button" style="margin-left: 5%; width: 80%;" onclick="window.location.href='/updateinfo?redirect=servers'">Update your server list.</button>
+        <% } %>
+        <h3 style="margin-left: 5%;">Server List</h3>
+        <% if (pterodactyl.relationships.servers.data.length == 0) { %>
+            <p style="margin-left: 5%;">You do not own any servers! Why not create one?</p>
+        <% } else { %>
+            <% for (let i = 0, len = pterodactyl.relationships.servers.data.length; i < len; i++) { %>
+                <div style="margin-left: 5%; width: 80%; height: 150px;">
+                    <h2 style="float: left; margin-top: 38px; margin-left: 2%;">
+                        <%= pterodactyl.relationships.servers.data[i].attributes.name.length > 15 ? pterodactyl.relationships.servers.data[i].attributes.name.slice(0, 12) + "..." : pterodactyl.relationships.servers.data[i].attributes.name %>
+                    </h2>
+                    <span style="float: right; margin-top: <% if (settings.api.client.allow.renewsuspendsystem.enabled) { %>17<% } else { %>38<% } %>px; margin-right: 2%; width: 15%;">
+                        <% if (settings.api.client.allow.renewsuspendsystem.enabled) { %>
+                            <button class="button" style="background-color: #39dd47; width: 100%" onclick="window.location.href='/renew?id=<%= pterodactyl.relationships.servers.data[i].attributes.id %>'">Renew</button>
+                        <% } %>
+                        <% if (settings.api.client.allow.server.modify == true) { %>
+                            <button class="button" style="background-color: #B3B3B3; width: 100%" onclick="window.location.href='/servers/edit?id=<%= pterodactyl.relationships.servers.data[i].attributes.id %>'"><i class="fa fa-gear" style="color:white;"></i></button>
+                        <% } %>
+                        <% if (settings.api.client.allow.server.delete == true) { %>
+                            <button class="button" style="background-color: #ff9183; width: 100%" onclick="if (confirm('Are you sure you want to delete the server? This action is irreversible.')) { window.location.href='/delete?id=<%= pterodactyl.relationships.servers.data[i].attributes.id %>' }"><i class="fa fa-close" style="color:white;"></i></button>
+                        <% } %>
+                    </span>
+                    <span style="float: right; margin-top: 38px; margin-right: 2%; width: 20%;">
+                        <h3 style="margin: 0px; color: #b3b3b3;">Disk</h3>
+                        <span style="color: #8a939c;"><%= pterodactyl.relationships.servers.data[i].attributes.limits.disk %>MB</span>
+                    </span>
+                    <span style="float: right; margin-top: 38px; margin-right: 2%; width: 20%;">
+                        <h3 style="margin: 0px; color: #b3b3b3;">Ram</h3>
+                        <span style="color: #8a939c;"><%= pterodactyl.relationships.servers.data[i].attributes.limits.memory %>MB</span>
+                    </span>
+                    <span style="float: right; margin-top: 38px; margin-right: 2%; width: 20%;">
+                        <h3 style="margin: 0px; color: #b3b3b3;">CPU</h3>
+                        <span style="color: #8a939c;"><%= pterodactyl.relationships.servers.data[i].attributes.limits.cpu %>%</span>
+                    </span>
+                </div>
+            <% } %>
+        <% } %>
+        <br><br><br><br>
+        <% if (extra.footerad == true) { %>
+            <footer>
+                <p style="padding: 10px;">
+                    Dashactyl - Developed by Sirv Development.
+                </p>
+            </footer>
+        <% } %>
+    </body>
+</html>

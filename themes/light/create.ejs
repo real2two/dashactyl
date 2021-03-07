@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <link rel="icon" type="image/png" href="<%= extra.faviconlink %>"/>
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link href="/assets/light/style.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <title><%= extra.servers.title.create %></title>
+        <% if (settings.api.arcio.enabled == true) { %>
+            <script async src="https://arc.io/widget.min.js#<%= settings.api.arcio.widgetid %>"></script>
+        <% } %>
+    </head>
+    <body>
+        <ul style="overflow: hidden;" class="ul">
+            <li style="float:left; margin-top: 12px; margin-left: 10%;"><a href="/" style="font-family: 'Rubik', sans-serif; font-size: 25px"><%= extra.home.name %></a></li>
+            <li style="float:right; margin-right: 20%" class="li">
+                <a href="<%= userinfo ? "/logout" : "/login" %>"><i class="fa fa-<%= userinfo ? "sign-out": "fw fa-user" %>" style="color: gray; margin-top: 10px;"></i></a>
+            </li>
+        </ul>
+        <button style="margin-left: 5%; margin-top: 50px;" class="button" onclick="window.location.href = '/dashboard'">Back</button>
+        <h2 style="margin-left: 5%;">Servers</h2>
+        <button class="button" style="margin-left: 5%; width: 80%;" onclick="window.location.replace('/servers')">Server List</button>
+        <br><br>
+        <% if (settings.api.client.allow.server.create == true) { %>
+            <% if (req.query.err) { %>
+                <div class="alert">
+                    <span class="closebtn">&times;</span>
+                    <% if (req.query.err == "MISSINGVARIABLE") { %>
+                        You have not filled out all of the server information.
+                    <% } else if (req.query.err == "NOTANUMBER") { %>
+                        RAM, disk and CPU must be a number.
+                    <% } else if (req.query.err == "ERRORONCREATE") { %>
+                        There has been an error while attempting to create your server. Please alert an administrator to fix this problem.
+                    <% } else if (req.query.err == "BIGSERVERNAME") { %>
+                        Your server name must be less than <b>191</b> characters.
+                    <% } else if (req.query.err == "TOOMUCHSERVERS") { %>
+                        The server could not be created because you have requested to create a server that exceeds your plan.
+                    <% } else if (req.query.err == "PREMIUMLOCATION") { %>
+                        You cannot make a server on the selected location on your current package.
+                    <% } else { %>
+                        <% if (req.query.num) { %>
+                            <% if (!isNaN(parseFloat(req.query.num))) { %>
+                                <% if (req.query.err == "TOOLITTLERAM" || req.query.err == "TOOLITTLEDISK" || req.query.err == "TOOLITTLECPU") { %>
+                                    You must make a server with at least <b><%= req.query.num %></b>
+                                    <% if (req.query.err.slice(-3) == "RAM") { %>
+                                        MB RAM
+                                    <% } else if (req.query.err.slice(-4) == "DISK") { %>
+                                        MB disk
+                                    <% } else { // CPU %>
+                                        % CPU
+                                    <% } %>
+                                    if you want to create a server with the server type you have selected.
+                                <% } else if (req.query.err == "TOOMUCHRAM" || req.query.err == "TOOMUCHDISK" || req.query.err == "TOOMUCHCPU") { %>
+                                    With the selected server type, you can have a maximum of <b><%= req.query.num %></b>
+                                    <% if (req.query.err.slice(-3) == "RAM") { %>
+                                        MB RAM
+                                    <% } else if (req.query.err.slice(-4) == "DISK") { %>
+                                        MB disk
+                                    <% } else { // CPU %>
+                                        % CPU
+                                    <% } %>
+                                    on the server.
+                                <% } else if (req.query.err == "EXCEEDRAM" || req.query.err == "EXCEEDDISK" || req.query.err == "EXCEEDCPU") { %>
+                                    The server could not be created because you have requested to create a server that exceeds your plan.
+                                <% } else { %>
+                                    I won't mind to add a little easter egg here. :)
+                                <% } %>
+                            <% } else { %>
+                                I won't mind to add a little easter egg here. :)
+                            <% } %>
+                        <% } else { %>
+                            I won't mind to add a little easter egg here. :)
+                        <% } %>
+                    <% } %>
+                </div>
+                <script>
+                    let close = document.getElementsByClassName("closebtn");
+                    let i;
+    
+                    for (i = 0; i < close.length; i++) {
+                        close[i].onclick = function() {
+                            var div = this.parentElement;
+                            div.style.opacity = "0";
+                            setTimeout(
+                                function () {
+                                    div.style.display = "none";
+                                },
+                            600);
+                        }
+                    }
+                </script>
+            <% } %>
+            <div style="width: 80%; margin-left: 5%;"><br>
+                <h3 style="margin-left: 5%;">Create a Server</h3>
+                <p style="margin-left: 5%;">Name: <input id="name"></p>
+                <p style="margin-left: 5%;">Location:&nbsp;<select class="select-selected" id="location">
+                    <% for (let [name, value] of Object.entries(settings.api.client.locations)) { %>
+                        <option value="<%= name %>"><%= value.name %></option>
+                    <% } %>
+                </select></p>
+                <p style="margin-left: 5%;">Egg:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select class="select-selected" id="egg">
+                    <% for (let [name, value] of Object.entries(settings.api.client.eggs)) { %>
+                        <option value="<%= name %>"><%= value.display %></option>
+                    <% } %>
+                </select></p>
+                <p style="margin-left: 5%;">RAM:&nbsp;&nbsp;&nbsp;<input id="ram"></p>
+                <p style="margin-left: 5%;">Disk:&nbsp;&nbsp;&nbsp;&nbsp;<input id="disk"></p>
+                <p style="margin-left: 5%;">CPU:&nbsp;&nbsp;&nbsp;<input id="cpu"></p>
+                <center>
+                    <button onclick="submitForm()" class="button">Create</button>
+                </center>
+            <br></div>
+            <script>
+                async function submitForm() {
+                    let name = encodeURIComponent(document.getElementById("name").value);
+                    let egg = encodeURIComponent(document.getElementById("egg").value);
+                    let ram = encodeURIComponent(document.getElementById("ram").value);
+                    let disk = encodeURIComponent(document.getElementById("disk").value);
+                    let cpu = encodeURIComponent(document.getElementById("cpu").value);
+                    let location = encodeURIComponent(document.getElementById("location").value);
+                    document.location.href = `/create?name=${name}&egg=${egg}&ram=${ram}&disk=${disk}&cpu=${cpu}&location=${location}`;
+                };
+            </script>
+        <% } else { %>
+            <p style="margin-left: 5%;">Server creations are disabled currently.</p>
+        <% } %>
+        <br><br><br><br>
+        <% if (extra.footerad == true) { %>
+            <footer>
+                <p style="padding: 10px;">
+                    Dashactyl - Developed by Sirv Development.
+                </p>
+            </footer>
+        <% } %>
+    </body>
+</html>

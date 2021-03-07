@@ -1,0 +1,141 @@
+<html>
+    <head>
+        <link rel="icon" type="image/png" href="<%= extra.faviconlink %>"/>
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link href="/assets/light/style.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <title><%= extra.dashboard.title %></title>
+        <% if (settings.api.arcio.enabled == true) { %>
+            <script async src="https://arc.io/widget.min.js#<%= settings.api.arcio.widgetid %>"></script>
+        <% } %>
+        <style>
+    .card {
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
+        padding: 16px;
+        text-align: center;
+        background-color: #f4f4f4;
+    }
+    .button:hover {
+        border-color: #f4f4f4;
+    }
+        </style>
+    </head>
+    <body>
+        <ul style="overflow: hidden;" class="ul">
+            <li style="float:left; margin-top: 12px; margin-left: 10%;"><a href="/" style="font-family: 'Rubik', sans-serif; font-size: 25px"><%= extra.home.name %></a></li>
+            <li style="float:right; margin-right: 20%" class="li">
+                <a href="<%= userinfo ? "/logout" : "/login"%>"><i class="fa fa-<%= userinfo ? "sign-out": "fw fa-user" %>" style="color: gray; margin-top: 10px;"></i></a>
+            </li>
+        </ul>
+        <h2 style="margin-left: 5%; margin-top: 50px;">Your Account</h2>
+        <% if (req.session.newaccount || req.session.password) { %>
+            <div class="alert">
+                <span class="closebtn">&times;</span>
+                <% if (req.session.newaccount) { %>
+                    A new account has been created for you on the Pterodactyl Panel.<br>
+                <% } %>
+                <% if (req.session.password) { %>
+                    Your <% if (!req.session.newaccount) { %>new <% } %>password is <code><%= req.session.password %></code>! Make sure to keep this password in a safe place.
+                <% } else { %>
+                    Please check your email to set your password.
+                <% } %>
+            </div>
+            <script>
+                let close = document.getElementsByClassName("closebtn");
+                let i;
+                
+                for (i = 0; i < close.length; i++) {
+                  close[i].onclick = function(){
+                    let div = this.parentElement;
+                    div.style.opacity = "0";
+                    setTimeout(function(){ div.style.display = "none"; }, 600);
+                  }
+                }
+            </script>
+        <% } %>
+        <h4 style="margin-left: 5%;">Panel Link: <a href="/panel" style="color: #9DBCDA"><%= settings.pterodactyl.domain %></a></h4>
+        <div style="margin-left: 5%; margin-top: 10px; width: 80%; margin-bottom: 10px">
+            <br>
+            <h4 style="margin-left: 5%;">Email</h4>
+            <input value="<%= pterodactyl.email %>" style="margin-left: 5%;" disabled>
+            <h4 style="margin-left: 5%;">Username</h4>
+            <input value="<%= pterodactyl.username %>" style="margin-left: 5%;" disabled>
+            <br><br><br>
+            <% if (settings.api.client.allow.regen == true) { %>
+                <button class="button" style="margin-left: 5%; width: 80%;" onclick="window.location.replace('/regen');">Regenerate your password.</button><br><br>
+            <% } %>
+            <button class="button" style="margin-left: 5%; width: 80%;" onclick="window.location.replace('/updateinfo');">Update your account information.</button>
+            <br><br><br><br>
+        </div>
+        <h2 style="margin-left: 5%;">Plan</h2>
+        <% if (typeof coins == "number") { %>
+            <p style="margin-left: 5%; color: rgb(129, 129, 129);">
+                You have <%= coins %> coin<%= coins == 1 ? "" : "s" %>.
+                <% if (settings.api.client.coins.store.enabled == true) { %>
+                    <button class="button" onclick="window.location.href='/store'">Buy resources.</button>
+                <% } %>
+            </p>
+        <% } %>
+        <% if (pterodactyl.root_admin == true) { %>
+            <button class="button" style="margin-left: 5%; width: 40%;" onclick="window.location.href='/servers'">View your servers.</button>
+            <button class="button" style="width: 40%;" onclick="window.location.href = '/admin';">Administrator Settings</button>
+        <% } else { %>
+            <button class="button" style="margin-left: 5%; width: 80%;" onclick="window.location.href='/servers'">View your servers.</button>
+        <% } %>
+        <br><br>
+        <%
+            let ram = 0;
+            let disk = 0;
+            let cpu = 0;
+            let servers = pterodactyl.relationships.servers.data.length;
+            for (let i = 0, len = pterodactyl.relationships.servers.data.length; i < len; i++) {
+                ram = ram + pterodactyl.relationships.servers.data[i].attributes.limits.memory;
+                disk = disk + pterodactyl.relationships.servers.data[i].attributes.limits.disk;
+                cpu = cpu + pterodactyl.relationships.servers.data[i].attributes.limits.cpu;
+            }
+        %>
+        
+        <div class="row" style="background-color: transparent; margin-left: 5%; width: 80%;">
+            <div class="column" style="background-color: transparent;">
+                <div class="card">
+                    <h3>RAM</h3>
+                    <p><code><%= ram %>MB</code> / <code><%= (packages ? packages.ram : 0) + extraresources.ram %>MB</code></p>
+                    <progress value="<%= ram %>" max="<%= (packages ? packages.ram : 0) + extraresources.ram %>" style="width: 100%;"></progress>
+                </div>
+            </div>
+            <div class="column" style="background-color: transparent;">
+                <div class="card">
+                    <h3>Disk</h3>
+                    <p><code><%= disk %>MB</code> / <code><%= (packages ? packages.disk : 0) + extraresources.disk %>MB</code></p>
+                    <progress value="<%= disk %>" max="<%= (packages ? packages.disk : 0) + extraresources.disk %>" style="width: 100%;"></progress>
+                </div>
+            </div>
+            <div class="column" style="background-color: transparent;">
+                <div class="card">
+                    <h3>CPU</h3>
+                    <p><code><%= cpu %>%</code> / <code><%= (packages ? packages.cpu : 0) + extraresources.cpu %>%</code></p>
+                    <progress value="<%= cpu %>" max="<%= (packages ? packages.cpu : 0) + extraresources.cpu %>" style="width: 100%;"></progress>
+                </div>
+            </div>
+            <div class="column" style="background-color: transparent;">
+                <div class="card">
+                    <h3>Servers</h3>
+                    <p><code><%= servers %> server<%= servers == 1 ? "" : "s" %></code> / <code><%= (packages ? packages.servers : 0) + extraresources.servers %> server<%= (packages ? packages.servers : 0) + extraresources.servers == 1 ? "" : "s" %></code></p>
+                    <progress value="<%= servers %>" max="<%= (packages ? packages.servers : 0) + extraresources.servers %>" style="width: 100%;"></progress>
+                </div>
+            </div>
+        </div>
+        <br><br><br>
+        <p><a href="#" style="margin-left: 5%;" onclick="document.cookie = 'theme=default'; window.location.reload();">Use dark theme.</a></p>
+        <br><br><br><br>
+        <% if (extra.footerad == true) { %>
+            <footer>
+                <p style="padding: 10px;">
+                    Dashactyl - Developed by Sirv Development.
+                </p>
+            </footer>
+        <% } %>
+    </body>
+</html>

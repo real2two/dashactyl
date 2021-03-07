@@ -1,0 +1,80 @@
+<html>
+    <head>
+        <link rel="icon" type="image/png" href="<%= extra.faviconlink %>"/>
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link href="/assets/light/style.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <title><%= extra.home.title %></title>
+        <% if (settings.api.arcio.enabled == true) { %>
+            <script async src="https://arc.io/widget.min.js#<%= settings.api.arcio.widgetid %>"></script>
+        <% } %>
+    </head>
+    <body>
+        <ul style="overflow: hidden;" class="ul">
+            <li style="float:left; margin-top: 12px; margin-left: 10%;"><a href="#" style="font-family: 'Rubik', sans-serif; font-size: 25px"><%= extra.home.name %></a></li>
+            <li style="float:right; margin-right: 20%" class="li">
+                <a href="<%= userinfo ? "/logout" : "/login" %>"><i class="fa fa-<%= userinfo ? "sign-out": "fw fa-user" %>" style="color: gray; margin-top: 10px;"></i></a>
+            </li>
+        </ul>
+        <center style="margin-top: 50px;">
+            <% if (req.query.err && !userinfo) { %>
+                <div class="alert">
+                    <span class="closebtn">&times;</span>
+                    <% if (req.query.err == "MISSINGCODE") { %>
+                        Missing code.
+                    <% } else if (req.query.err == "MISSINGSCOPES") { %>
+                        Missing scopes.
+                    <% } else if (req.query.err == "IPBLOCKED") { %>
+                        You could not sign in, because your IP has been blocked from signing in.
+                    <% } else if (req.query.err == "ANTIALT") { %>
+                        It has been detected that you may be using an alt account.
+                    <% } else if (req.query.err == "ANOTHERACCOUNT") { %>
+                        We have detected an account with your Discord email on it but the user id has already been claimed on another Discord account.
+                    <% } else if (req.query.err == "UNKNOWN") { %>
+                        An error has occured when attempting to create your account.
+                    <% } else if (req.query.err == "DISABLED") { %>
+                        New users cannot signup currently.
+                    <% } else if (req.query.err == "CANNOTGETINFO") { %>
+                        An error has occured while attempting to get your user information.
+                    <% } else if (req.query.err == "UNVERIFIED") { %>
+                        Not verified a Discord account.
+                    <% } else if (req.query.err == "INVALIDCODE") { %>
+                        Invalid code.
+                    <% } else { %>
+                        I won't mind to add a little easter egg here. :)
+                    <% } %>
+                </div>
+                <script>
+                    let close = document.getElementsByClassName("closebtn");
+                    let i;
+    
+                    for (i = 0; i < close.length; i++) {
+                        close[i].onclick = function() {
+                            var div = this.parentElement;
+                            div.style.opacity = "0";
+                            setTimeout(
+                                function () {
+                                    div.style.display = "none";
+                                },
+                            600);
+                        }
+                    }
+                </script>
+            <% } %>
+            <h1><%= extra.home.topmsg %></h1>
+            <h3><%= extra.home.bottommsg %></h3>
+            <br><br>
+            <button class="button" onclick="window.location.href = '<%= userinfo ? extra.home.buttontext.loggedin.link : extra.home.buttontext.loggedout.link %>';"><%= userinfo ? extra.home.buttontext.loggedin.text : extra.home.buttontext.loggedout.text %></button>
+            <br><br><p><a href="#" onclick="document.cookie = 'theme=default'; window.location.reload();">Use dark theme.</a></p>
+        </center>
+        <% if (extra.footerad == true) { %>
+            <footer>
+                <p style="padding: 10px;">
+                    Dashactyl - Developed by Sirv Development.
+                </p>
+            </footer>
+        <% } %>
+    </body>
+</html>

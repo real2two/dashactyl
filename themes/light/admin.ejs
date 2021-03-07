@@ -1,0 +1,130 @@
+<html>
+    <head>
+        <link rel="icon" type="image/png" href="<%= extra.faviconlink %>"/>
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link href="/assets/light/style.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <title><%= extra.admin.title.default %></title>
+        <% if (settings.api.arcio.enabled == true) { %>
+            <script async src="https://arc.io/widget.min.js#<%= settings.api.arcio.widgetid %>"></script>
+        <% } %>
+    </head>
+    <body>
+        <ul style="overflow: hidden;" class="ul">
+            <li style="float:left; margin-top: 12px; margin-left: 10%;"><a href="/" style="font-family: 'Rubik', sans-serif; font-size: 25px"><%= extra.home.name %></a></li>
+            <li style="float:right; margin-right: 20%" class="li">
+                <a href="<%= userinfo ? "/logout" : "/login"%>"><i class="fa fa-<%= userinfo ? "sign-out": "fw fa-user" %>" style="color: gray; margin-top: 10px;"></i></a>
+            </li>
+        </ul>
+        <button style="margin-left: 5%; margin-top: 50px;" class="button" onclick="window.location.href = '/dashboard'">Back</button>
+        <h2 style="margin-left: 5%;">Administrator Settings</h2>
+        <p style="margin-left: 5%;">There is not much administrator settings yet.</p>
+        <% if (req.query.err) { %>
+            <% if (req.query.err) { %>
+                <% if (req.query.err !== "none") { %>
+                    <div class="alert">
+                        <span class="closebtn">&times;</span>
+                        <% if (req.query.err == "MISSINGID") { %>
+                            You have not provided the Discord user ID.
+                        <% } else if (req.query.err == "INVALIDID" || req.query.err == "MISSINGID") { %>
+                            You have provided a Discord user ID that does not exist, or has not signed up on the dashboard.
+                        <% } else if (req.query.err == "MISSINGVARIABLES") { %>
+                            You have not provided either ram, disk, cpu, and/or servers.
+                        <% } else if (req.query.err == "MISSINGCOINS") { %>
+                            You have not provided the coin amount.
+                        <% } else if (req.query.err == "RAMSIZE" || req.query.err == "DISKSIZE" || req.query.err == "CPUSIZE" || req.query.err == "SERVERSIZE") { %>
+                            The RAM, disk, CPU and servers number cannot be less than 0 nor above 999999999999999.
+                        <% } else if (req.query.err == "INVALIDCOINNUMBER") { %>
+                            The coin amount must be a number.
+                        <% } else if (req.query.err == "COINSIZE") { %>
+                            The coin amount canno tbe less than 0 and must be above 999999999999999.
+                        <% } else { %>
+                            Stop admin abusing.
+                        <% } %>
+                    </div>
+                    <script>
+                        let close = document.getElementsByClassName("closebtn");
+                        let i;
+        
+                        for (i = 0; i < close.length; i++) {
+                            close[i].onclick = function() {
+                                var div = this.parentElement;
+                                div.style.opacity = "0";
+                                setTimeout(
+                                    function () {
+                                        div.style.display = "none";
+                                    },
+                                600);
+                            }
+                        }
+                    </script>
+                <% } %>
+            <% } %>
+        <% } %>
+        <br><br>
+        <h4 style="margin-left: 5%;">Version</h4>
+        <p id="latestversion"><span style="margin-left: 5%;">Fetching...</span></p>
+        <script>
+            fetch("https://real2two.github.io/dashactyl/version")
+                .then(res => Promise.resolve(res.json()).then(ver => {
+                    let currentver = "<%= settings.version.replace(/"/g, `\\\\"`) %>";
+                    if (ver.version == currentver) {
+                        document.getElementById("latestversion").innerHTML = `<span style="margin-left: 5%;">You are running Dashactyl version <code>${currentver}</code>. Your dashboard is up-to-date!</span>`;
+                    } else {
+                        document.getElementById("latestversion").innerHTML = `<span style="margin-left: 5%;">Your dashboard is <b>not up-to-date!</b> The latest version is <code>${ver.version}</code> and you are currently running version <code><%= settings.version %></code>.</span>`;
+                    };
+                }));
+        </script>
+        <br><br>
+        <h4 style="margin-left: 5%;">Change someone's package.</h4>
+        <p style="margin-left: 5%;">Discord User ID: <input id="id"></p>
+        <p style="margin-left: 5%;">Package: <select class="select-selected" id="package">
+            <option value="">Default Plan (Currently: <%= settings.api.client.packages.default %>)</option>
+            <% for (let [name, value] of Object.entries(settings.api.client.packages.list)) { %>
+                <option value="<%= name %>"><%= name %> (RAM: <%= value.ram %>MB, Disk: <%= value.disk %>MB, CPU: <%= value.cpu %>%, Servers: <%= value.servers %>)</option>
+            <% } %>
+        </select></p>
+        <center><button onclick="submitForm()" class="button">Change</button></center>
+        <form style="margin-left: 5%;" action="/setresources">
+            <h4>Change someone's extra resources.</h4>
+            <label for="id">Discord User ID:</label>
+            <input name="id"><br><br>
+            <label for="ram">RAM:</label>
+            <input name="ram" type="number"><br><br>
+            <label for="disk">Disk:</label>
+            <input name="disk" type="number"><br><br>
+            <label for="cpu">CPU:</label>
+            <input name="cpu" type="number"><br><br>
+            <label for="servers">Servers:</label>
+            <input name="servers" type="number"><br><br>
+            <center><button type="submit" class="button">Change</button></center>
+        </form>
+
+        <h4 style="margin-left: 5%;">Set coins.</h4>
+        <form style="margin-left: 5%;" action="/setcoins">
+            <label for="id">Discord User ID:</label>
+            <input name="id"><br><br>
+            <label for="coins">Coins:</label>
+            <input name="coins" type="number"><br><br>
+            <center><button type="submit" class="button">Set</button></center>
+        </form>
+        
+        <br><br><br><br>
+        <script>
+            async function submitForm() {
+                let id = encodeURIComponent(document.getElementById("id").value);
+                let packagename = encodeURIComponent(document.getElementById("package").value);
+                window.location.href = "/setplan?id=" + id + "&package=" + packagename
+            }
+        </script>
+        <% if (extra.footerad == true) { %>
+            <footer>
+                <p style="padding: 10px;">
+                    Dashactyl - Developed by Sirv Development.
+                </p>
+            </footer>
+        <% } %>
+    </body>
+</html>
