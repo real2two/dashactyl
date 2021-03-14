@@ -120,7 +120,7 @@ module.exports.load = async function(app, db) {
                     }
                   }
                 ).then(res => res.json()).then(json => {
-                  if(json.message && json.message === "Unknown Member" && settings.api.client.bot.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
+                  if(json.message && json.message === "Unknown Member" && settings.api.client.bot.joinguild.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
                 });
           } else if (typeof newsettings.api.client.bot.joinguild.guildid == "object") {
             if (Array.isArray(newsettings.api.client.bot.joinguild.guildid)) {
@@ -148,7 +148,7 @@ module.exports.load = async function(app, db) {
                     }
                   }
                 ).then(res => res.json()).then(json => {
-                  if(json.message && json.message === "Unknown Member" && settings.api.client.bot.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
+                  if(json.message && json.message === "Unknown Member" && settings.api.client.bot.joinguild.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
                 });
               }
             } else {
