@@ -42,6 +42,8 @@
                         Not verified a Discord account.
                     <% } else if (req.query.err == "INVALIDCODE") { %>
                         Invalid code.
+                    <% } else if (req.query.err == "DISCORD") { %>
+                        You must join the discord server to use the dashboard!
                     <% } else { %>
                         I won't mind to add a little easter egg here. :)
                     <% } %>
