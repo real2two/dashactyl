@@ -21,7 +21,8 @@
          "joinguild": {
            "_comment": "The Discord bot must be in these servers and have invite permissions.",
            "enabled": false,
-           "guildid": ["guild id", "another guild id"]
+           "guildid": ["guild id", "another guild id"],
+           "forcejoin": false
         }
       },
       "passwordgenerator": {
