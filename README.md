@@ -8,7 +8,7 @@ Dashactyl is developed by Sirv Development. You can check out their Discord: [ht
 
 # Wiki
 
-Need to install Dashactyl?
+Need to install Dashactyl? Need API documentations? Need a place to find themes?
 
 Check out the wiki! https://github.com/real2two/dashactyl/wiki
 
