@@ -41,7 +41,7 @@
                         The coin amount canno tbe less than 0 and must be above 999999999999999.
                     <% } else if (req.query.err == "NOIP") { %>
                         There is no IP saved for that user.
-                    <% } else if(req.query.err == "NONE" && req.query.ip) { %>
+                    <% } else if(req.query.err == "NONE" && req.query.ip !== undefined) { %>
                         IP: <%= req.query.ip %>
                     <% } else { %>
                         Stop admin abusing.
