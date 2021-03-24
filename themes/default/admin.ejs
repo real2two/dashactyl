@@ -39,6 +39,8 @@
                         The coin amount must be a number.
                     <% } else if (req.query.err == "COINSIZE") { %>
                         The coin amount canno tbe less than 0 and must be above 999999999999999.
+                    <% } else if (req.query.err == "NOIP") { %>
+                        There is no IP saved for that user.
                     <% } else if(req.query.err == "NONE" && req.query.ip) { %>
                         IP: <%= req.query.ip %>
                     <% } else { %>
