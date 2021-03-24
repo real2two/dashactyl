@@ -113,12 +113,14 @@
             <center><button type="submit" class="button">Set</button></center>
         </form>
         
-        <h4 style="margin-left: 5%;">Get User IP</h4>
-        <form style="margin-left: 5%;" action="/getip">
-            <label for="id">Discord User ID:</label>
-            <input name="id"><br><br>
-            <center><button type="submit" class="button">Get</button></center>
-        </form>
+        <% if(settings.api.client.oauth2.ip["duplicate check"] == true) { %>
+            <h4 style="margin-left: 5%;">Get IP.</h4>
+            <form style="margin-left: 5%;" action="/getip">
+                <label for="id">Discord User ID:</label>
+                <input name="id"><br><br>
+                <center><button type="submit" class="button">Get</button></center>
+            </form>
+        <% } %>
         
         <br><br><br><br>
         <script>
