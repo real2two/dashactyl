@@ -205,7 +205,7 @@ module.exports.load = async function(app, db) {
         if (cacheaccountinfo.attributes.root_admin !== true) return four0four(req, res, theme);
 
         let failredirect = theme.settings.redirect.failedgetip ? theme.settings.redirect.failedgetip : "/";
-        let successredirect = theme.settings.redirect.setplan ? theme.settings.redirect.setplan : "/";
+        let successredirect = theme.settings.redirect.getip ? theme.settings.redirect.getip : "/";
         if (!req.query.id) return res.redirect(`${failredirect}?err=MISSINGID`);
         
         if (!(await db.get("users-" + req.query.id))) return res.redirect(`${failredirect}?err=INVALIDID`);
