@@ -13,6 +13,8 @@
         "failedmodifyserver": "/servers/edit",
         "setplan": "/admin",
         "failedsetplan": "/admin",
+        "getip": "/admin",
+        "failedgetip": "/admin",
         "createserverdisabled": "/servers?err=disabled",
         "modifyserverdisabled": "/servers?err=disabled",
         "deleteserverdisabled": "/servers?err=disabled",
