@@ -212,7 +212,7 @@ module.exports.load = async function(app, db) {
         
         if (!(await db.get("ip-" + req.query.id))) return res.redirect(`${failredirect}?err=NOIP`);
         let ip = await db.get("ip-" + req.query.id);
-        return res.redirect(successredirect + "?err=none&ip=" + ip)
+        return res.redirect(successredirect + "?err=NONE&ip=" + ip)
     });
 
     async function four0four(req, res, theme) {
