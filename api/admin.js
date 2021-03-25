@@ -9,6 +9,7 @@ const fs = require("fs");
 const indexjs = require("../index.js");
 const adminjs = require("./admin.js");
 const ejs = require("ejs");
+const chalk = require('chalk');
 
 module.exports.load = async function(app, db) {
     app.get("/setcoins", async (req, res) => {
@@ -53,6 +54,26 @@ module.exports.load = async function(app, db) {
 
         let successredirect = theme.settings.redirect.setcoins ? theme.settings.redirect.setcoins : "/";
         res.redirect(successredirect + "?err=none");
+        if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("ADMIN")) {
+            let username = cacheaccountinfo.attributes.username;
+            let tag = `${cacheaccountinfo.attributes.first_name}${cacheaccountinfo.attributes.last_name}`
+            let params = JSON.stringify({
+                embeds: [
+                    {
+                        title: "Coins Set",
+                        description: `**__User:__** ${id} (<@${id}>)\n**__Admin:__** ${tag} (<@${req.session.userinfo.id}>)\n\n**Coins:** ${coins}`,
+                        color: hexToDecimal("#ffff00")
+                    }
+                ]
+            })
+            fetch(`${settings.api.client.webhook.webhook_url}`, {
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: params
+            }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
+        }
     });
 
     app.get("/setresources", async (req, res) => {
@@ -86,6 +107,7 @@ module.exports.load = async function(app, db) {
             let diskstring = req.query.disk;
             let cpustring = req.query.cpu;
             let serversstring = req.query.servers;
+            let id = req.query.id;
 
             let currentextra = await db.get("extra-" + req.query.id);
             let extra;
@@ -140,6 +162,28 @@ module.exports.load = async function(app, db) {
             }
 
             adminjs.suspend(req.query.id);
+
+            // Just copy this and put it in the other endpoints
+            let username = cacheaccountinfo.attributes.username;
+            let tag = `${cacheaccountinfo.attributes.first_name}${cacheaccountinfo.attributes.last_name}`
+            if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("ADMIN")) {
+                let params = JSON.stringify({
+                    embeds: [
+                        {
+                            title: "Resources Added",
+                            description: `**__User:__** ${id} (<@${id}>)\n**__Admin:__** ${tag} (<@${req.session.userinfo.id}>)\n\n**Quantity:**\n- ${ramstring}MB RAM\n- ${diskstring}MB Disk\n- ${serversstring} Servers\n- ${cpustring}% CPU`,
+                            color: hexToDecimal("#ffff00")
+                        }
+                    ]
+                })
+                fetch(`${settings.api.client.webhook.webhook_url}`, {
+                    method: "POST",
+                    headers: {
+                        'Content-type': 'application/json',
+                    },
+                    body: params
+                }).catch(e => console.warn(chalk.red("[WEBHOOK] There was an error sending a message to the webhook:\n" + e)))
+            }
             return res.redirect(successredirect + "?err=none");
         } else {
             res.redirect(`${failredirect}?err=MISSINGVARIABLES`);
@@ -176,12 +220,61 @@ module.exports.load = async function(app, db) {
         if (!req.query.package) {
             await db.delete("package-" + req.query.id);
             adminjs.suspend(req.query.id);
+            if(settings.api.client.webhook.auditlogs.enabled === true && !settings.api.client.webhook.auditlogs.disabled.includes("ADMIN")) {
+                let id = req.query.id;
+                let username = cacheaccountinfo.attributes.username;
+                let tag = `${cacheaccountinfo.attributes.first_name}${cacheaccountinfo.attributes.last_name}`
+                let params = JSON.stringify({
+                    embeds: [
+                        {
+                            title: "Package Changed",
+                            description: `**__User:__** ${id} (<@${id}>)\n**__Admin:__** ${tag} (<@${req.session.userinfo.id}>)\n\n**Package:** ${req.query.package}`,
+                            color: hexToDecimal("#ffff00")
+                        }
+                    ]
+                })
+                fetch(`${settings.api.client.webhook.webhook_url}`, {
+                    method: "POST",
+                    headers: {
+                        'Content-type': 'application/json',
+                    },
+                    body: params
+                }).catch(e => console.warn(chalk.red("[WEBHOOK] There was an error sending a message to the webhook:\n" + e)));
+            }
+            fetch(`${settings.api.client.webhook.webhook_url}`, {
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: params
+            }).catch(e => console.warn(chalk.red("[WEBHOOK] There was an error sending a message to the webhook:\n" + e)))
             return res.redirect(successredirect + "?err=none");
         } else {
             let newsettings = JSON.parse(fs.readFileSync("./settings.json").toString());
             if (!newsettings.api.client.packages.list[req.query.package]) return res.redirect(`${failredirect}?err=INVALIDPACKAGE`);
             await db.set("package-" + req.query.id, req.query.package);
             adminjs.suspend(req.query.id);
+            if(settings.api.client.webhook.auditlogs.enabled === true && !settings.api.client.webhook.auditlogs.disabled.includes("ADMIN")) {
+                let id = req.query.id;
+                let username = cacheaccountinfo.attributes.username;
+                let tag = `${cacheaccountinfo.attributes.first_name}${cacheaccountinfo.attributes.last_name}`
+                let params = JSON.stringify({
+                    embeds: [
+                        {
+                            title: "Package Changed",
+                            description: `**__User:__** ${id} (<@${id}>)\n**__Admin:__** ${tag} (<@${req.session.userinfo.id}>)\n\n**Package:** ${req.query.package}`,
+                            color: hexToDecimal("#ffff00")
+                        }
+                    ]
+                })
+                fetch(`${settings.api.client.webhook.webhook_url}`, {
+                    method: "POST",
+                    headers: {
+                        'Content-type': 'application/json',
+                    },
+                    body: params
+                }).catch(e => console.warn(chalk.red("[WEBHOOK] There was an error sending a message to the webhook:\n" + e)));
+            }
             return res.redirect(successredirect + "?err=none");
         }
     });
@@ -322,3 +415,7 @@ module.exports.load = async function(app, db) {
         };
     }
 };
+
+function hexToDecimal(hex) {
+    return parseInt(hex.replace("#",""), 16)
+  }
