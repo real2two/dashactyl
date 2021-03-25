@@ -137,6 +137,24 @@ module.exports.load = async function(app, db) {
           if (settings.api.client.allow.renewsuspendsystem.enabled == true) {
             renew.set(serverinfotext.attributes.id);
           }
+          if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
+            let params = JSON.stringify({
+                embeds: [
+                    {
+                        title: "Server Created",
+                        description: `**__User:__** ${req.session.userinfo.username}#${req.session.userinfo.discriminator} (${req.session.userinfo.id})\n\n**__Configuration:__**\n**Name:** ${name}\n**Ram:** ${ram}MB\n**Disk:** ${disk}MB\n**CPU:** ${cpu}%\n**Egg:** ${egg}\n**Location:** ${location}`,
+                        color: hexToDecimal("#ffff00")
+                    }
+                ]
+            })
+            fetch(`${settings.api.client.webhook.webhook_url}`, {
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: params
+            }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
+        }
           return res.redirect(theme.settings.redirect.createserver ? theme.settings.redirect.createserver : "/");
         } else {
           res.redirect(`${redirectlink}?err=NOTANUMBER`);
@@ -244,6 +262,24 @@ module.exports.load = async function(app, db) {
         req.session.pterodactyl.relationships.servers.data = pterorelationshipsserverdata;
         let theme = indexjs.get(req);
         adminjs.suspend(req.session.userinfo.id);
+        if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
+          let params = JSON.stringify({
+              embeds: [
+                  {
+                      title: "Server Modified",
+                      description: `**__User:__** ${req.session.userinfo.username}#${req.session.userinfo.discriminator} (${req.session.userinfo.id})\n\n**__New Configuration:__**\n${checkexist[0].attributes.limits.memory}MB Ram\n${checkexist[0].attributes.limits.disk}MB Disk\n${checkexist[0].attributes.limits.cpu}% CPU`,
+                      color: hexToDecimal("#ffff00")
+                  }
+              ]
+          })
+          fetch(`${settings.api.client.webhook.webhook_url}`, {
+              method: "POST",
+              headers: {
+                  'Content-type': 'application/json',
+              },
+              body: params
+          }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
+      }
         res.redirect(theme.settings.redirect.modifyserver ? theme.settings.redirect.modifyserver : "/");
       } else {
         res.redirect(`${redirectlink}?id=${req.query.id}&err=MISSINGVARIABLE`);
@@ -285,6 +321,25 @@ module.exports.load = async function(app, db) {
       }
 
       adminjs.suspend(req.session.userinfo.id);
+
+      if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
+        let params = JSON.stringify({
+            embeds: [
+                {
+                    title: "Server Deleted",
+                    description: `**__User:__** ${req.session.userinfo.username}#${req.session.userinfo.discriminator} (${req.session.userinfo.id})\n\n**ID:** ${req.query.id}`,
+                    color: hexToDecimal("#ffff00")
+                }
+            ]
+        })
+        fetch(`${settings.api.client.webhook.webhook_url}`, {
+            method: "POST",
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: params
+        }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
+    }
   
       return res.redirect(theme.settings.redirect.deleteserver ? theme.settings.redirect.deleteserver : "/");
     } else {
@@ -292,3 +347,6 @@ module.exports.load = async function(app, db) {
     }
   });
 };
+function hexToDecimal(hex) {
+  return parseInt(hex.replace("#",""), 16)
+}
