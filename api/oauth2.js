@@ -232,7 +232,25 @@ module.exports.load = async function(app, db) {
         req.session.pterodactyl = cacheaccountinfo.attributes;
 
         req.session.userinfo = userinfo;
-
+        
+        if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("LOGIN")) {
+          let params = JSON.stringify({
+              embeds: [
+                  {
+                      title: "Login",
+                      description: `**__User:__** ${req.session.userinfo.username}#${req.session.userinfo.discriminator} (${req.session.userinfo.id}) \n**IP:** ${newsettings.api.client.oauth2.ip["duplicate check"] == true ? await db.get("ip-" + req.session.userinfo.id) : "IP Checking is off"}`,
+                      color: hexToDecimal("#ffff00")
+                  }
+              ]
+          })
+          fetch(`${settings.api.client.webhook.webhook_url}`, {
+              method: "POST",
+              headers: {
+                  'Content-type': 'application/json',
+              },
+              body: params
+          }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
+      }
         if (customredirect) return res.redirect(customredirect);
         return res.redirect(theme.settings.redirect.callback ? theme.settings.redirect.callback : "/");
       };
@@ -251,4 +269,8 @@ function makeid(length) {
      result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
+}
+
+function hexToDecimal(hex) {
+  return parseInt(hex.replace("#",""), 16)
 }
