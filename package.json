@@ -1,6 +1,6 @@
 {
   "name": "dashactyl",
-  "version": "0.3.2",
+  "version": "0.3.6",
   "description": "The best Pterodactyl Panel dashboard addition.",
   "main": "index.js",
   "author": "Two",
