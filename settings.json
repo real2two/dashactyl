@@ -27,7 +27,7 @@
       },
       "webhook": {
         "_comment": "URL of the webhook to send messages to.",
-        "webhook_url": "https://canary.discord.com/api/webhooks/824430469735120959/eBnxj4P4yPd5Q5_SINafWkwJ_AjFRRHZ4Itzabn6Y8OHOrxjdQ874EwQ1eXKCIPqwmnl",
+        "webhook_url": "",
         "auditlogs": {
           "_comment": "This feature allows you to log actions, and get an overview of a users actions (only works if done with dashactyl, not ptero)",
           "enabled": false,
