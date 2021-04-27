@@ -70,6 +70,9 @@ module.exports.load = async function(app, db) {
         let ip = (newsettings.api.client.oauth2.ip["trust x-forwarded-for"] == true ? (req.headers['x-forwarded-for'] || req.connection.remoteAddress) : req.connection.remoteAddress);
         ip = (ip ? ip : "::1").replace(/::1/g, "::ffff:127.0.0.1").replace(/^.*:/, '');
         
+        let isvpn = await fetch(`http://check.getipintel.net/check.php?ip=${ip}&contact=a@aaa.com&flags=m`, { method: "get" })
+        if(await isvpn.text() == "1") return res.redirect(failedcallback + "?err=USINGVPN")
+
         if (newsettings.api.client.oauth2.ip.block.includes(ip)) return res.redirect(failedcallback + "?err=IPBLOCKED")
 
         if (newsettings.api.client.oauth2.ip["duplicate check"] == true) {
