@@ -4,7 +4,7 @@
 
 Dashactyl is a professional panel for allowing users to split resources for servers on the Pterodactyl Panel. 
 
-Dashactyl is developed by Sirv Development. You can check out their Discord: [https://discord.gg/YZNrJ649fJ](https://discord.gg/YZNrJ649fJ).
+Dashactyl is developed by the community and people. Check out the Discord: https://discord.gg/tBzVgw8u
 
 # Wiki
 
