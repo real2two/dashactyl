@@ -81,6 +81,7 @@ module.exports.load = async function(app, db) {
 
     if (typeof req.body !== "object") return res.send({status: "body must be an object"});
     if (Array.isArray(req.body)) return res.send({status: "body cannot be an array"});
+    if (req.body == null) return res.send({status: "body cannot be null"});
 
     let id = req.body.id;
     let coins = req.body.coins;
@@ -108,6 +109,7 @@ module.exports.load = async function(app, db) {
 
     if (typeof req.body !== "object") return res.send({status: "body must be an object"});
     if (Array.isArray(req.body)) return res.send({status: "body cannot be an array"});
+    if (req.body == null) return res.send({status: "body cannot be null"});
 
     if (typeof req.body.id !== "string") return res.send({status: "missing id"});
 
@@ -132,6 +134,7 @@ module.exports.load = async function(app, db) {
 
     if (typeof req.body !== "object") return res.send({status: "body must be an object"});
     if (Array.isArray(req.body)) return res.send({status: "body cannot be an array"});
+    if (req.body == null) return res.send({status: "body cannot be null"});
 
     if (typeof req.body.id !== "string") return res.send({status: "missing id"});
 
