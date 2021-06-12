@@ -3,21 +3,21 @@
   "defaulttheme": "default",
   "website": {
     "port": 80,
-    "secret": "change this website session secret password, make sure to change this for your website's security"
+    "secret": "Website Session Secret Password - MAKE SURE TO CHANGE THIS."
   },
   "pterodactyl": {
-    "domain": "pterodactyl panel domain",
-    "key": "pterodactyl panel admin api key with all read and writes"
+    "domain": "Pterodactyl Panel Domain (eg. https://panel.example.com)",
+    "key": "Pterodactyl Panel API Key (Read and Write permissions on all)"
   },
   "database": "sqlite://database.sqlite",
   "api": {
     "client": {
        "api": {
          "enabled": false,
-         "code": "api token here, anyone who has access to this token can ran administrator settings"
+         "code": "API Token here. KEEP THIS PRIVATE."
        },
        "bot": {
-         "token": "bot token",
+         "token": "Discord Bot Token here",
          "joinguild": {
            "_comment": "The Discord bot must be in these servers and have invite permissions.",
            "enabled": false,
@@ -37,7 +37,7 @@
       },
       "passwordgenerator": {
         "signup": false,
-        "length": 8
+        "length": 16
       },
       "allow": {
         "newusers": true,
@@ -56,9 +56,9 @@
       },
       "oauth2": {
         "_comment": "Go to https://discord.dev/ and create an application to set these up.",
-        "id": "discord oauth2 application id",
-        "secret": "discord oauth2 application secret",
-        "link": "discord oauth2 application link without the '/callback'",
+        "id": "Application ID",
+        "secret": "Application Secret",
+        "link": "Application Link - WITHOUT '/callback'",
         "callbackpath": "/callback",
         "prompt": true,
 
@@ -89,7 +89,7 @@
       },
       "locations": {
         "1": {
-          "name": "Location Name",
+          "name": "Example Node",
 
           "_comment": "Make 'package' be null to allow anyone with enough resources in their plan to create a server with this location. Also, make the 'package' variable an array, like [], with the location names with quotes to make a user be required to have a plan in order to use the package.",
           "package": null
@@ -176,7 +176,7 @@
     "arcio": {
       "_comment": "You can make an arc.io widget on https://arc.io. You can get money using arc.io.",
       "enabled": false,
-      "widgetid": "arc.io widget id here"
+      "widgetid": "Widget ID here"
     }
   }
 }
