@@ -5,6 +5,8 @@ const ejs = require("ejs");
 
 module.exports.load = async function(app, db) {
   app.get("/buyram", async (req, res) => {
+    if (!req.session.pterodactyl) return res.redirect("/login");
+    
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
@@ -59,6 +61,8 @@ module.exports.load = async function(app, db) {
   });
 
   app.get("/buydisk", async (req, res) => {
+    if (!req.session.pterodactyl) return res.redirect("/login");
+    
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
@@ -113,6 +117,8 @@ module.exports.load = async function(app, db) {
   });
 
   app.get("/buycpu", async (req, res) => {
+    if (!req.session.pterodactyl) return res.redirect("/login");
+    
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
@@ -167,6 +173,8 @@ module.exports.load = async function(app, db) {
   });
 
   app.get("/buyservers", async (req, res) => {
+    if (!req.session.pterodactyl) return res.redirect("/login");
+    
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
