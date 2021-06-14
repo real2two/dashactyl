@@ -25,6 +25,12 @@
            "forcejoin": false
         }
       },
+      "autoad": {
+        "_comment": "Sends a message to all minecraft servers console after an amount of time. Time is in milliseconds.",
+        "enabled":false,
+        "message": "This server is hosted for free by Dashactyl!",
+        "time": 360000
+      },
       "webhook": {
         "_comment": "URL of the webhook to send messages to.",
         "webhook_url": "",
