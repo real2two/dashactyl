@@ -31,7 +31,16 @@
         "purchasecpu": "/store",
         "failedpurchasecpu": "/store",
         "purchaseservers": "/store",
-        "failedpurchaseservers": "/store"
+        "failedpurchaseservers": "/store",
+        "arcioerror": "/dashboard",
+        "missingorinvalidcouponcode": "/redeem",
+        "successfullyredeemedcoupon": "/redeem",
+        "couponcreationfailed": "/admin",
+        "couponcreationsuccess": "/admin",
+        "couponrevokefailed": "/admin",
+        "couponrevokesuccess": "/admin",
+        "removeaccountfailed": "/admin",
+        "removeaccountsuccess": "/admin"
     },
     "pages": {
         "dashboard": "dashboard.ejs",
@@ -39,57 +48,72 @@
         "servers/new": "create.ejs",
         "servers/edit": "edit.ejs",
         "admin": "admin.ejs",
-        "store": "store.ejs"
+        "store": "store.ejs",
+        "afk": "arcio.ejs",
+        "redeem": "redeem.ejs"
     },
     "mustbeloggedin": [
         "/dashboard",
         "/servers",
         "/servers/new",
         "/servers/edit",
-        "/store"
+        "/store",
+        "/afk",
+        "/redeem"
     ],
     "mustbeadmin": [
         "/admin"
+    ],
+    "generateafktoken": [
+        "/afk"
     ],
     "variables": {
         "footerad": true,
         "faviconlink": "https://camo.githubusercontent.com/d2e9b4ddcf7618efa123961ae270f7eaa83362f8/68747470733a2f2f6d656469612e646973636f72646170702e6e65742f6174746163686d656e74732f3730363937303631373437313330333736312f3736383630363132323134373730383936382f707465726f64616374796c2d70616e656c2e706e67",
         "home": {
-            "title": "Dashactyl - Home",
-            "name": "Dashactyl",
-            "topmsg": "Dashactyl",
-            "bottommsg": "An dashboard addition to the Pterodactyl Panel.",
+            "title": "Home - Dashactyl",
             "buttontext": {
                 "loggedin": {
                     "text": "Dashboard",
                     "link": "/dashboard"
                 },
                 "loggedout": {
-                    "text": "Login",
+                    "_note": "This below supports HTML encoding.",
+
+                    "text": "<img src=\"https://i.imgur.com/EYGXn9D.png\" width=\"25\" /> Login with Discord",
                     "link": "/login"
                 }
             }
         },
         "dashboard": {
-            "title": "Dashactyl - Dashboard"
+            "title": "Dashboard - Dashactyl"
         },
         "servers": {
             "title": {
-                "list": "Dashactyl - Servers",
-                "create": "Dashactyl - Create Server",
-                "modify": "Dashactyl - Modify Server"
+                "list": "Servers - Dashactyl",
+                "create": "Create Server - Dashactyl",
+                "modify": "Modify Server - Dashactyl"
             }
         },
         "error": {
-            "title": "Dashactyl - 404"
+            "title": "404 - Dashactyl"
         },
         "admin": {
             "title": {
-                "default": "Dashactyl - Admin"
+                "default": "Admin - Dashactyl"
             }
         },
         "store": {
-            "title": "Dashactyl - Store"
+            "title": "Store - Dashactyl"
+        },
+        "arcio": {
+            "title": "AFK Page - Dashactyl"
+        },
+        "maintenance": {
+            "title": "Maintenance - Dashactyl"
+        },
+        "redeem": {
+            "title": "Redeem - Dashactyl"
         }
     }
 }

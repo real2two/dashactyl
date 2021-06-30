@@ -14,6 +14,7 @@ if (settings.pterodactyl.domain.slice(-1) == "/")
 const fetch = require('node-fetch');
 
 const indexjs = require("../index.js");
+const arciotext = (require("./arcio.js")).text;
 
 const fs = require("fs");
 
@@ -27,7 +28,7 @@ module.exports.load = async function(app, db) {
   app.get("/logout", (req, res) => {
     let theme = indexjs.get(req);
     req.session.destroy(() => {
-      return res.redirect(theme.settings.redirect.logout ? theme.settings.redirect.logout : "/");
+      return res.redirect(theme.settings.redirect.logout || "/");
     });
   });
 
@@ -35,7 +36,7 @@ module.exports.load = async function(app, db) {
     let theme = indexjs.get(req);
     let customredirect = req.session.redirect;
     delete req.session.redirect;
-    let failedcallback = theme.settings.redirect.failedcallback ? theme.settings.redirect.failedcallback : "/";
+    let failedcallback = theme.settings.redirect.failedcallback || "/";
     if (!req.query.code) return res.redirect(failedcallback + "?err=MISSINGCODE");
     let json = await fetch(
       'https://discord.com/api/oauth2/token',
@@ -73,7 +74,7 @@ module.exports.load = async function(app, db) {
         if (newsettings.api.client.oauth2.ip.block.includes(ip)) return res.redirect(failedcallback + "?err=IPBLOCKED")
 
         if (newsettings.api.client.oauth2.ip["duplicate check"] == true) {
-          let allips = await db.get("ips") ? await db.get("ips") : [];
+          let allips = await db.get("ips") || [];
           let mainip = await db.get("ip-" + userinfo.id);
           if (mainip) {
             if (mainip !== ip) {
@@ -95,6 +96,18 @@ module.exports.load = async function(app, db) {
           }
         }
 
+        if (newsettings.api.client.oauth2.ip["cookie alt check"]) {
+          let accountid = getCookie(req, "accountid");
+
+          if (accountid) {
+            if (accountid !== userinfo.id) {
+              return res.redirect(failedcallback + "?err=ANTIALT");
+            }
+          }
+
+          res.cookie('accountid', userinfo.id);
+        }
+
         if (newsettings.api.client.bot.joinguild.enabled == true) {
           if (typeof newsettings.api.client.bot.joinguild.guildid == "string") {
             await fetch(
@@ -110,18 +123,31 @@ module.exports.load = async function(app, db) {
                 })
               }
             );
-            await fetch(
-                  `https://discord.com/api/guilds/${guild}/members/${userinfo.id}`,
-                  {
-                    method: "get",
-                    headers: {
-                      'Content-Type': 'application/json',
-                      "Authorization": `Bot ${newsettings.api.client.bot.token}`
-                    }
+            let checkmemberexist = await fetch(
+              `https://discord.com/api/guilds/${guild}/members/${userinfo.id}`,
+              {
+                method: "get",
+                headers: {
+                  'Content-Type': 'application/json',
+                  "Authorization": `Bot ${newsettings.api.client.bot.token}`
+                }
+              }
+            );
+            let checkmemberexistjson = checkmemberexist.json();
+            if (checkmemberexistjson.message && checkmemberexistjson.message === "Unknown Member" && settings.api.client.bot.joinguild.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
+
+            if (newsettings.api.client.bot.joinguild.registeredrole) {
+              await fetch(
+                `https://discord.com/api/guilds/${guild}/members/${userinfo.id}/roles/${newsettings.api.client.bot.joinguild.registeredrole}`,
+                {
+                  method: "put",
+                  headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bot ${newsettings.api.client.bot.token}`
                   }
-                ).then(res => res.json()).then(json => {
-                  if(json.message && json.message === "Unknown Member" && settings.api.client.bot.joinguild.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
-                });
+                }
+              );
+            }
           } else if (typeof newsettings.api.client.bot.joinguild.guildid == "object") {
             if (Array.isArray(newsettings.api.client.bot.joinguild.guildid)) {
               for (let guild of newsettings.api.client.bot.joinguild.guildid) {
@@ -138,7 +164,8 @@ module.exports.load = async function(app, db) {
                     })
                   }
                 );
-                await fetch(
+
+                let checkmemberexist = await fetch(
                   `https://discord.com/api/guilds/${guild}/members/${userinfo.id}`,
                   {
                     method: "get",
@@ -147,9 +174,22 @@ module.exports.load = async function(app, db) {
                       "Authorization": `Bot ${newsettings.api.client.bot.token}`
                     }
                   }
-                ).then(res => res.json()).then(json => {
-                  if(json.message && json.message === "Unknown Member" && settings.api.client.bot.joinguild.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
-                });
+                );
+                let checkmemberexistjson = checkmemberexist.json();
+                if (checkmemberexistjson.message && checkmemberexistjson.message === "Unknown Member" && settings.api.client.bot.joinguild.forcejoin) return res.redirect(failedcallback + "?err=DISCORD");
+
+                if (newsettings.api.client.bot.joinguild.registeredrole) {
+                  await fetch(
+                    `https://discord.com/api/guilds/${guild}/members/${userinfo.id}/roles/${newsettings.api.client.bot.joinguild.registeredrole}`,
+                    {
+                      method: "put",
+                      headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bot ${newsettings.api.client.bot.token}`
+                      }
+                    }
+                  );
+                }
               }
             } else {
               return res.send("Tell an administrator there is an error settings.json: api.client.bot.joinguild.guildid is not an array nor a string.");
@@ -181,7 +221,7 @@ module.exports.load = async function(app, db) {
             );
             if (await accountjson.status == 201) {
               let accountinfo = JSON.parse(await accountjson.text());
-              let userids = await db.get("users") ? await db.get("users") : [];
+              let userids = await db.get("users") || [];
               userids.push(accountinfo.attributes.id);
               await db.set("users", userids);
               await db.set("users-" + userinfo.id, accountinfo.attributes.id);
@@ -199,10 +239,10 @@ module.exports.load = async function(app, db) {
                 }
               );
               let accountlist = await accountlistjson.json();
-              let user = accountlist.data.filter(acc => acc.attributes.email == userinfo.email);
+              let user = accountlist.data.filter(acc => acc.attributes.email.toLowerCase() == userinfo.email.toLowerCase());
               if (user.length == 1) {
                 let userid = user[0].attributes.id;
-                let userids = await db.get("users") ? await db.get("users") : [];
+                let userids = await db.get("users") || [];
                 if (userids.filter(id => id == userid).length == 0) {
                   userids.push(userid);
                   await db.set("users", userids);
@@ -233,7 +273,7 @@ module.exports.load = async function(app, db) {
 
         req.session.userinfo = userinfo;
         
-        if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("LOGIN")) {
+        if(newsettings.api.client.webhook.auditlogs.enabled && !newsettings.api.client.webhook.auditlogs.disabled.includes("LOGIN")) {
           let params = JSON.stringify({
               embeds: [
                   {
@@ -243,16 +283,16 @@ module.exports.load = async function(app, db) {
                   }
               ]
           })
-          fetch(`${settings.api.client.webhook.webhook_url}`, {
+          fetch(`${newsettings.api.client.webhook.webhook_url}`, {
               method: "POST",
               headers: {
                   'Content-type': 'application/json',
               },
               body: params
           }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
-      }
+        }
         if (customredirect) return res.redirect(customredirect);
-        return res.redirect(theme.settings.redirect.callback ? theme.settings.redirect.callback : "/");
+        return res.redirect(theme.settings.redirect.callback || "/");
       };
       res.redirect(failedcallback + "?err=UNVERIFIED");
     } else {
@@ -273,4 +313,22 @@ function makeid(length) {
 
 function hexToDecimal(hex) {
   return parseInt(hex.replace("#",""), 16)
+}
+
+// Get a cookie.
+function getCookie(req, cname) {
+  let cookies = req.headers.cookie;
+  if (!cookies) return null;
+  let name = cname + "=";
+  let ca = cookies.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return decodeURIComponent(c.substring(name.length, c.length));
+    }
+  }
+  return "";
 }

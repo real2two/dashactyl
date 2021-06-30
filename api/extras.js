@@ -2,6 +2,7 @@ const settings = require("../settings.json");
 const fs = require('fs');
 
 const indexjs = require("../index.js");
+const arciotext = (require("./arcio.js")).text;
 const fetch = require('node-fetch');
 
 module.exports.load = async function(app, db) {
@@ -38,7 +39,7 @@ module.exports.load = async function(app, db) {
     );
 
     let theme = indexjs.get(req);
-    res.redirect(theme.settings.redirect.regenpassword ? theme.settings.redirect.regenpassword : "/")
+    res.redirect(theme.settings.redirect.regenpassword || "/")
   });
 };
 

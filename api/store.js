@@ -1,4 +1,5 @@
 const indexjs = require("../index.js");
+const arciotext = (require("./arcio.js")).text;
 const adminjs = require("./admin.js");
 const fs = require("fs");
 const ejs = require("ejs");
@@ -6,7 +7,7 @@ const ejs = require("ejs");
 module.exports.load = async function(app, db) {
   app.get("/buyram", async (req, res) => {
     if (!req.session.pterodactyl) return res.redirect("/login");
-    
+
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
@@ -20,10 +21,9 @@ module.exports.load = async function(app, db) {
       if (amount < 1 || amount > 10) return res.send("amount must be 1-10");
       
       let theme = indexjs.get(req);
-      let failedcallback = theme.settings.redirect.failedpurchaseram ? theme.settings.redirect.failedpurchaseram : "/";
+      let failedcallback = theme.settings.redirect.failedpurchaseram || "/";
 
-      let usercoins = await db.get("coins-" + req.session.userinfo.id);
-      usercoins = usercoins ? usercoins : 0;
+      let usercoins = await db.get("coins-" + req.session.userinfo.id) || 0;
 
       let per = newsettings.api.client.coins.store.ram.per * amount;
       let cost = newsettings.api.client.coins.store.ram.cost * amount;
@@ -32,14 +32,7 @@ module.exports.load = async function(app, db) {
 
       let newusercoins = usercoins - cost;
 
-      if (newusercoins == 0) {
-        await db.delete("coins-" + req.session.userinfo.id);
-      } else {
-        await db.set("coins-" + req.session.userinfo.id, newusercoins);
-      }
-
-      let extra = await db.get("extra-" + req.session.userinfo.id);
-      extra = extra ? extra : {
+      let extra = await db.get("extra-" + req.session.userinfo.id) || {
         ram: 0,
         disk: 0,
         cpu: 0,
@@ -48,6 +41,14 @@ module.exports.load = async function(app, db) {
 
       extra.ram = extra.ram + per;
 
+      if (extra.ram > 999999999999999) return res.redirect(failedcallback + "?err=MAXIMUMRAM");
+
+      if (newusercoins == 0) {
+        await db.delete("coins-" + req.session.userinfo.id);
+      } else {
+        await db.set("coins-" + req.session.userinfo.id, newusercoins);
+      }
+
       if (extra.ram == 0 && extra.disk == 0 && extra.cpu == 0 && extra.servers == 0) {
         await db.delete("extra-" + req.session.userinfo.id);
       } else {
@@ -56,13 +57,13 @@ module.exports.load = async function(app, db) {
 
       adminjs.suspend(req.session.userinfo.id);
 
-      res.redirect((theme.settings.redirect.purchaseram ? theme.settings.redirect.purchaseram : "/") + "?err=none");
+      res.redirect((theme.settings.redirect.purchaseram || "/") + "?err=none");
     }
   });
 
   app.get("/buydisk", async (req, res) => {
     if (!req.session.pterodactyl) return res.redirect("/login");
-    
+
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
@@ -76,10 +77,9 @@ module.exports.load = async function(app, db) {
       if (amount < 1 || amount > 10) return res.send("amount must be 1-10");
       
       let theme = indexjs.get(req);
-      let failedcallback = theme.settings.redirect.failedpurchasedisk ? theme.settings.redirect.failedpurchasedisk : "/";
+      let failedcallback = theme.settings.redirect.failedpurchasedisk || "/";
 
-      let usercoins = await db.get("coins-" + req.session.userinfo.id);
-      usercoins = usercoins ? usercoins : 0;
+      let usercoins = await db.get("coins-" + req.session.userinfo.id) || 0;
 
       let per = newsettings.api.client.coins.store.disk.per * amount;
       let cost = newsettings.api.client.coins.store.disk.cost * amount;
@@ -88,14 +88,7 @@ module.exports.load = async function(app, db) {
 
       let newusercoins = usercoins - cost;
 
-      if (newusercoins == 0) {
-        await db.delete("coins-" + req.session.userinfo.id);
-      } else {
-        await db.set("coins-" + req.session.userinfo.id, newusercoins);
-      }
-
-      let extra = await db.get("extra-" + req.session.userinfo.id);
-      extra = extra ? extra : {
+      let extra = await db.get("extra-" + req.session.userinfo.id) || {
         ram: 0,
         disk: 0,
         cpu: 0,
@@ -103,6 +96,14 @@ module.exports.load = async function(app, db) {
       };
 
       extra.disk = extra.disk + per;
+
+      if (extra.disk > 999999999999999) return res.redirect(failedcallback + "?err=MAXIMUMDISK");
+
+      if (newusercoins == 0) {
+        await db.delete("coins-" + req.session.userinfo.id);
+      } else {
+        await db.set("coins-" + req.session.userinfo.id, newusercoins);
+      }
 
       if (extra.ram == 0 && extra.disk == 0 && extra.cpu == 0 && extra.servers == 0) {
         await db.delete("extra-" + req.session.userinfo.id);
@@ -112,13 +113,13 @@ module.exports.load = async function(app, db) {
 
       adminjs.suspend(req.session.userinfo.id);
 
-      res.redirect((theme.settings.redirect.purchasedisk ? theme.settings.redirect.purchasedisk : "/") + "?err=none");
+      res.redirect((theme.settings.redirect.purchasedisk || "/") + "?err=none");
     }
   });
 
   app.get("/buycpu", async (req, res) => {
     if (!req.session.pterodactyl) return res.redirect("/login");
-    
+
     let newsettings = await enabledCheck(req, res);
     if (newsettings) {
       let amount = req.query.amount;
@@ -132,10 +133,9 @@ module.exports.load = async function(app, db) {
       if (amount < 1 || amount > 10) return res.send("amount must be 1-10");
       
       let theme = indexjs.get(req);
-      let failedcallback = theme.settings.redirect.failedpurchasecpu ? theme.settings.redirect.failedpurchasecpu : "/";
+      let failedcallback = theme.settings.redirect.failedpurchasecpu || "/";
 
-      let usercoins = await db.get("coins-" + req.session.userinfo.id);
-      usercoins = usercoins ? usercoins : 0;
+      let usercoins = await db.get("coins-" + req.session.userinfo.id) || 0;
 
       let per = newsettings.api.client.coins.store.cpu.per * amount;
       let cost = newsettings.api.client.coins.store.cpu.cost * amount;
@@ -144,14 +144,7 @@ module.exports.load = async function(app, db) {
 
       let newusercoins = usercoins - cost;
 
-      if (newusercoins == 0) {
-        await db.delete("coins-" + req.session.userinfo.id);
-      } else {
-        await db.set("coins-" + req.session.userinfo.id, newusercoins);
-      }
-
-      let extra = await db.get("extra-" + req.session.userinfo.id);
-      extra = extra ? extra : {
+      let extra = await db.get("extra-" + req.session.userinfo.id) || {
         ram: 0,
         disk: 0,
         cpu: 0,
@@ -159,6 +152,14 @@ module.exports.load = async function(app, db) {
       };
 
       extra.cpu = extra.cpu + per;
+
+      if (extra.cpu > 999999999999999) return res.redirect(failedcallback + "?err=MAXIMUMCPU");
+
+      if (newusercoins == 0) {
+        await db.delete("coins-" + req.session.userinfo.id);
+      } else {
+        await db.set("coins-" + req.session.userinfo.id, newusercoins);
+      }
 
       if (extra.ram == 0 && extra.disk == 0 && extra.cpu == 0 && extra.servers == 0) {
         await db.delete("extra-" + req.session.userinfo.id);
@@ -168,7 +169,7 @@ module.exports.load = async function(app, db) {
 
       adminjs.suspend(req.session.userinfo.id);
 
-      res.redirect((theme.settings.redirect.purchasecpu ? theme.settings.redirect.purchasecpu : "/") + "?err=none");
+      res.redirect((theme.settings.redirect.purchasecpu || "/") + "?err=none");
     }
   });
 
@@ -188,10 +189,9 @@ module.exports.load = async function(app, db) {
       if (amount < 1 || amount > 10) return res.send("amount must be 1-10");
       
       let theme = indexjs.get(req);
-      let failedcallback = theme.settings.redirect.failedpurchaseservers ? theme.settings.redirect.failedpurchaseservers : "/";
+      let failedcallback = theme.settings.redirect.failedpurchaseservers || "/";
 
-      let usercoins = await db.get("coins-" + req.session.userinfo.id);
-      usercoins = usercoins ? usercoins : 0;
+      let usercoins = await db.get("coins-" + req.session.userinfo.id) || 0;
 
       let per = newsettings.api.client.coins.store.servers.per * amount;
       let cost = newsettings.api.client.coins.store.servers.cost * amount;
@@ -200,14 +200,7 @@ module.exports.load = async function(app, db) {
 
       let newusercoins = usercoins - cost;
 
-      if (newusercoins == 0) {
-        await db.delete("coins-" + req.session.userinfo.id);
-      } else {
-        await db.set("coins-" + req.session.userinfo.id, newusercoins);
-      }
-
-      let extra = await db.get("extra-" + req.session.userinfo.id);
-      extra = extra ? extra : {
+      let extra = await db.get("extra-" + req.session.userinfo.id) || {
         ram: 0,
         disk: 0,
         cpu: 0,
@@ -215,6 +208,14 @@ module.exports.load = async function(app, db) {
       };
 
       extra.servers = extra.servers + per;
+
+      if (extra.servers > 999999999999999) return res.redirect(failedcallback + "?err=MAXIMUMSERVERS");
+
+      if (newusercoins == 0) {
+        await db.delete("coins-" + req.session.userinfo.id);
+      } else {
+        await db.set("coins-" + req.session.userinfo.id, newusercoins);
+      }
 
       if (extra.ram == 0 && extra.disk == 0 && extra.cpu == 0 && extra.servers == 0) {
         await db.delete("extra-" + req.session.userinfo.id);
@@ -224,7 +225,7 @@ module.exports.load = async function(app, db) {
 
       adminjs.suspend(req.session.userinfo.id);
 
-      res.redirect((theme.settings.redirect.purchaseservers ? theme.settings.redirect.purchaseservers : "/") + "?err=none");
+      res.redirect((theme.settings.redirect.purchaseservers || "/") + "?err=none");
     }
   });
 
