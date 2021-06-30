@@ -1,6 +1,7 @@
 const settings = require("../settings.json");
 const fetch = require('node-fetch');
 const indexjs = require("../index.js");
+const arciotext = (require("./arcio.js")).text;
 const adminjs = require("./admin.js");
 const renew = require("./renewal.js");
 const fs = require("fs");
@@ -24,7 +25,7 @@ module.exports.load = async function(app, db) {
     req.session.pterodactyl = cacheaccountinfo.attributes;
     if (req.query.redirect) if (typeof req.query.redirect == "string") return res.redirect("/" + req.query.redirect);
     let theme = indexjs.get(req);
-    res.redirect(theme.settings.redirect.updateservers ? theme.settings.redirect.updateservers : "/");
+    res.redirect(theme.settings.redirect.updateservers || "/");
   });
 
   app.get("/create", async (req, res) => {
@@ -34,7 +35,7 @@ module.exports.load = async function(app, db) {
 
     let newsettings = JSON.parse(fs.readFileSync("./settings.json").toString());
     if (newsettings.api.client.allow.server.create == true) {
-      let redirectlink = theme.settings.redirect.failedcreateserver ? theme.settings.redirect.failedcreateserver : "/"; // fail redirect link
+      let redirectlink = theme.settings.redirect.failedcreateserver || "/"; // fail redirect link
       
       if (req.query.name && req.query.ram && req.query.disk && req.query.cpu && req.query.egg && req.query.location) {
         try {
@@ -47,14 +48,13 @@ module.exports.load = async function(app, db) {
         let package = newsettings.api.client.packages.list[packagename ? packagename : newsettings.api.client.packages.default];
 
         let extra = 
-        await db.get("extra-" + req.session.userinfo.id) ?
-        await db.get("extra-" + req.session.userinfo.id) :
-        {
-          ram: 0,
-          disk: 0,
-          cpu: 0,
-          servers: 0
-        };
+        await db.get("extra-" + req.session.userinfo.id) ||
+          {
+            ram: 0,
+            disk: 0,
+            cpu: 0,
+            servers: 0
+          };
 
         let ram2 = 0;
         let disk2 = 0;
@@ -137,7 +137,7 @@ module.exports.load = async function(app, db) {
           if (settings.api.client.allow.renewsuspendsystem.enabled == true) {
             renew.set(serverinfotext.attributes.id);
           }
-          if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
+          if(newsettings.api.client.webhook.auditlogs.enabled && !newsettings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
             let params = JSON.stringify({
                 embeds: [
                     {
@@ -147,7 +147,7 @@ module.exports.load = async function(app, db) {
                     }
                 ]
             })
-            fetch(`${settings.api.client.webhook.webhook_url}`, {
+            fetch(`${newsettings.api.client.webhook.webhook_url}`, {
                 method: "POST",
                 headers: {
                     'Content-type': 'application/json',
@@ -155,7 +155,7 @@ module.exports.load = async function(app, db) {
                 body: params
             }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
         }
-          return res.redirect(theme.settings.redirect.createserver ? theme.settings.redirect.createserver : "/");
+          return res.redirect(theme.settings.redirect.createserver || "/");
         } else {
           res.redirect(`${redirectlink}?err=NOTANUMBER`);
         }
@@ -163,7 +163,7 @@ module.exports.load = async function(app, db) {
         res.redirect(`${redirectlink}?err=MISSINGVARIABLE`);
       }
     } else {
-      res.redirect(theme.settings.redirect.createserverdisabled ? theme.settings.redirect.createserverdisabled : "/");
+      res.redirect(theme.settings.redirect.createserverdisabled || "/");
     }
   });
 
@@ -176,7 +176,7 @@ module.exports.load = async function(app, db) {
     if (newsettings.api.client.allow.server.modify == true) {
       if (!req.query.id) return res.send("Missing server id.");
 
-      let redirectlink = theme.settings.redirect.failedmodifyserver ? theme.settings.redirect.failedmodifyserver : "/"; // fail redirect link
+      let redirectlink = theme.settings.redirect.failedmodifyserver || "/"; // fail redirect link
   
       let checkexist = req.session.pterodactyl.relationships.servers.data.filter(name => name.attributes.id == req.query.id);
       if (checkexist.length !== 1) return res.send("Invalid server id.");
@@ -214,9 +214,7 @@ module.exports.load = async function(app, db) {
   
         if (!egginfo) return res.redirect(`${redirectlink}?id=${req.query.id}&err=MISSINGEGG`);
 
-        let extra = 
-          await db.get("extra-" + req.session.userinfo.id) ?
-          await db.get("extra-" + req.session.userinfo.id) :
+        let extra = await db.get("extra-" + req.session.userinfo.id) ||
           {
             ram: 0,
             disk: 0,
@@ -262,7 +260,7 @@ module.exports.load = async function(app, db) {
         req.session.pterodactyl.relationships.servers.data = pterorelationshipsserverdata;
         let theme = indexjs.get(req);
         adminjs.suspend(req.session.userinfo.id);
-        if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
+        if(newsettings.api.client.webhook.auditlogs.enabled && !newsettings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
           let params = JSON.stringify({
               embeds: [
                   {
@@ -272,7 +270,7 @@ module.exports.load = async function(app, db) {
                   }
               ]
           })
-          fetch(`${settings.api.client.webhook.webhook_url}`, {
+          fetch(`${newsettings.api.client.webhook.webhook_url}`, {
               method: "POST",
               headers: {
                   'Content-type': 'application/json',
@@ -280,12 +278,12 @@ module.exports.load = async function(app, db) {
               body: params
           }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
       }
-        res.redirect(theme.settings.redirect.modifyserver ? theme.settings.redirect.modifyserver : "/");
+        res.redirect(theme.settings.redirect.modifyserver || "/");
       } else {
         res.redirect(`${redirectlink}?id=${req.query.id}&err=MISSINGVARIABLE`);
       }
     } else {
-      res.redirect(theme.settings.redirect.modifyserverdisabled ? theme.settings.redirect.modifyserverdisabled : "/");
+      res.redirect(theme.settings.redirect.modifyserverdisabled || "/");
     }
   });
 
@@ -322,7 +320,9 @@ module.exports.load = async function(app, db) {
 
       adminjs.suspend(req.session.userinfo.id);
 
-      if(settings.api.client.webhook.auditlogs.enabled && !settings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
+      res.redirect(theme.settings.redirect.deleteserver || "/");
+
+      if(newsettings.api.client.webhook.auditlogs.enabled && !newsettings.api.client.webhook.auditlogs.disabled.includes("SERVER")) {
         let params = JSON.stringify({
             embeds: [
                 {
@@ -332,7 +332,7 @@ module.exports.load = async function(app, db) {
                 }
             ]
         })
-        fetch(`${settings.api.client.webhook.webhook_url}`, {
+        fetch(`${newsettings.api.client.webhook.webhook_url}`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json',
@@ -341,9 +341,8 @@ module.exports.load = async function(app, db) {
         }).catch(e => console.warn(chalk.red("[WEBSITE] There was an error sending to the webhook: " + e)));
     }
   
-      return res.redirect(theme.settings.redirect.deleteserver ? theme.settings.redirect.deleteserver : "/");
     } else {
-      res.redirect(theme.settings.redirect.deleteserverdisabled ? theme.settings.redirect.deleteserverdisabled : "/");
+      res.redirect(theme.settings.redirect.deleteserverdisabled || "/");
     }
   });
 };

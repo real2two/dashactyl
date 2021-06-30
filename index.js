@@ -5,6 +5,7 @@
 const fs = require("fs");
 const fetch = require('node-fetch');
 const chalk = require("chalk");
+const arciotext = (require("./api/arcio.js")).text;
 
 // Load settings.
 
@@ -23,6 +24,9 @@ const defaultthemesettings = {
 module.exports.renderdataeval =
   `(async () => {
     let newsettings = JSON.parse(require("fs").readFileSync("./settings.json"));
+
+    const JavaScriptObfuscator = require('javascript-obfuscator');
+
     let renderdata = {
       req: req,
       settings: newsettings,
@@ -40,17 +44,24 @@ module.exports.renderdataeval =
       theme: theme.name,
       extra: theme.settings.variables
     };
+
+    if (newsettings.api.arcio.enabled == true && req.session.arcsessiontoken) {
+      renderdata.arcioafktext = JavaScriptObfuscator.obfuscate(\`
+        let token = "\${req.session.arcsessiontoken}";
+        let everywhat = \${newsettings.api.arcio["afk page"].every};
+        let gaincoins = \${newsettings.api.arcio["afk page"].coins};
+        let arciopath = "\${newsettings.api.arcio["afk page"].path.replace(/\\\\/g, "\\\\\\\\").replace(/"/g, "\\\\\\"")}";
+
+        \${arciotext}
+      \`);
+    };
+
     return renderdata;
   })();`;
 
 // Load database
 
-const Keyv = require("keyv");
-const db = new Keyv(settings.database);
-
-db.on('error', err => {
-  console.log(chalk.red("[DATABASE] An error has occured when attempting to access the database."))
-});
+const db = require("./db.js");
 
 module.exports.db = db;
 
@@ -66,11 +77,28 @@ const ejs = require("ejs");
 const session = require("express-session");
 const indexjs = require("./index.js");
 
+// Sets up saving session data.
+
+const sqlite = require("better-sqlite3");
+const SqliteStore = require("better-sqlite3-session-store")(session);
+const session_db = new sqlite("sessions.db");
+
 // Load the website.
 
 module.exports.app = app;
 
-app.use(session({secret: settings.website.secret}));
+app.use(session({
+  secret: settings.website.secret,
+  resave: true,
+  saveUninitialized: true,
+  store: new SqliteStore({
+    client: session_db, 
+    expired: {
+      clear: true,
+      intervalMs: 900000
+    }
+  })
+}));
 
 app.use(express.json({
   inflate: true,
@@ -96,7 +124,17 @@ setInterval(
   }, 100
 )
 
-app.use(function(req, res, next) {
+app.use(async (req, res, next) => {
+  if (req.session.userinfo && req.session.userinfo.id && !(await db.get("users-" + req.session.userinfo.id))) {
+    let theme = indexjs.get(req);
+
+    req.session.destroy(() => {
+      return res.redirect(theme.settings.redirect.logout || "/");
+    });
+
+    return;
+  }
+
   let manager = {
     "/callback": 2,
     "/create": 1,
@@ -107,7 +145,12 @@ app.use(function(req, res, next) {
     "/admin": 1,
     "/regen": 1,
     "/renew": 1,
-    "/api/userinfo": 1
+    "/api/userinfo": 1,
+    "/userinfo": 2,
+    "/remove_account": 1,
+    "/create_coupon": 1,
+    "/revoke_coupon": 1,
+    "/getip": 1
   };
   if (manager[req._parsedUrl.pathname]) {
     if (cache > 0) {
@@ -165,6 +208,10 @@ apifiles.forEach(file => {
 app.all("*", async (req, res) => {
   if (req.session.pterodactyl) if (req.session.pterodactyl.id !== await db.get("users-" + req.session.userinfo.id)) return res.redirect("/login?prompt=none");
   let theme = indexjs.get(req);
+
+  let newsettings = JSON.parse(require("fs").readFileSync("./settings.json"));
+  if (newsettings.api.arcio.enabled == true) if (theme.settings.generateafktoken.includes(req._parsedUrl.pathname)) req.session.arcsessiontoken = Math.random().toString(36).substring(2, 15);
+  
   if (theme.settings.mustbeloggedin.includes(req._parsedUrl.pathname)) if (!req.session.userinfo || !req.session.pterodactyl) return res.redirect("/login" + (req._parsedUrl.pathname.slice(0, 1) == "/" ? "?redirect=" + req._parsedUrl.pathname.slice(1) : ""));
   if (theme.settings.mustbeadmin.includes(req._parsedUrl.pathname)) {
     ejs.renderFile(

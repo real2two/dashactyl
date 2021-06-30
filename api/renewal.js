@@ -6,6 +6,7 @@ module.exports.load = async function(app, db) {
         let renewalservers = {};
         
         const indexjs = require("../index.js");
+        const arciotext = (require("./arcio.js")).text;
         const fetch = require('node-fetch');
         const fs = require('fs');
 
@@ -45,7 +46,7 @@ module.exports.load = async function(app, db) {
                 let discordid = req.session.userinfo.id;
         
                 let packagename = await db.get("package-" + discordid);
-                let package = newsettings.api.client.packages.list[packagename ? packagename : newsettings.api.client.packages.default];
+                let package = newsettings.api.client.packages.list[packagename || newsettings.api.client.packages.default];
         
                 let extra = 
                     await db.get("extra-" + discordid) ?
@@ -92,7 +93,7 @@ module.exports.load = async function(app, db) {
                 }
             );
         
-            return res.redirect(theme.settings.redirect.renewserver ? theme.settings.redirect.renewserver : "/");
+            return res.redirect(theme.settings.redirect.renewserver || "/");
         });
 
         module.exports.set = async function(id) {
