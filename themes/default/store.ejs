@@ -308,7 +308,7 @@
                             <div class="card-body">
                                 <h4 class="card-title">Disk</h4>
                                 <h6 class="card-description"><%= settings.api.client.coins.store.disk.per %> Disk per <%= settings.api.client.coins.store.disk.cost %> coin<%= settings.api.client.coins.store.disk.cost == 1 ? "" : "s" %>.</h6>
-                                <form action="/buyram">
+                                <form action="/buydisk">
                                     <select name="amount" class="form-control" class="select-selected">
                                         <option value=1><%= settings.api.client.coins.store.disk.per %>MB Disk - <%= settings.api.client.coins.store.disk.cost %> coin<%= settings.api.client.coins.store.disk.cost == 1 ? "" : "s" %></option>
                                         <option value=2><%= settings.api.client.coins.store.disk.per * 2 %>MB Disk - <%= settings.api.client.coins.store.disk.cost * 2 %> coins</option>
@@ -330,7 +330,7 @@
                             <div class="card-body">
                                 <h4 class="card-title">CPU</h4>
                                 <h6 class="card-description"><%= settings.api.client.coins.store.cpu.per %> CPU per <%= settings.api.client.coins.store.cpu.cost %> coin<%= settings.api.client.coins.store.cpu.cost == 1 ? "" : "s" %>.</h6>
-                                <form action="/buyram">
+                                <form action="/buycpu">
                                     <select name="amount" class="form-control" class="select-selected">
                                         <option value=1><%= settings.api.client.coins.store.cpu.per %>% CPU - <%= settings.api.client.coins.store.cpu.cost %> coin<%= settings.api.client.coins.store.cpu.cost == 1 ? "" : "s" %></option>
                                         <option value=2><%= settings.api.client.coins.store.cpu.per * 2 %>% CPU - <%= settings.api.client.coins.store.cpu.cost * 2 %> coins</option>
@@ -352,7 +352,7 @@
                             <div class="card-body">
                                 <h4 class="card-title">Servers</h4>
                                 <h6 class="card-description"><%= settings.api.client.coins.store.servers.per %> Servers per <%= settings.api.client.coins.store.servers.cost %> coin<%= settings.api.client.coins.store.servers.cost == 1 ? "" : "s" %>.</h6>
-                                <form action="/buyram">
+                                <form action="/buyservers">
                                     <select name="amount" class="form-control" class="select-selected">
                                         <option value=1><%= settings.api.client.coins.store.servers.per %> Server<%= settings.api.client.coins.store.servers.per == 1 ? "" : "s" %>  - <%= settings.api.client.coins.store.servers.cost %> coin<%= settings.api.client.coins.store.servers.cost == 1 ? "" : "s" %></option>
                                         <option value=2><%= settings.api.client.coins.store.servers.per * 2 %> Servers - <%= settings.api.client.coins.store.servers.cost * 2 %> coins</option>
