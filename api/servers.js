@@ -265,7 +265,7 @@ module.exports.load = async function(app, db) {
               embeds: [
                   {
                       title: "Server Modified",
-                      description: `**__User:__** ${req.session.userinfo.username}#${req.session.userinfo.discriminator} (${req.session.userinfo.id})\n\n**__New Configuration:__**\n${checkexist[0].attributes.limits.memory}MB Ram\n${checkexist[0].attributes.limits.disk}MB Disk\n${checkexist[0].attributes.limits.cpu}% CPU`,
+                      description: `**__User:__** ${req.session.userinfo.username}#${req.session.userinfo.discriminator} (${req.session.userinfo.id})\n\n**__New Configuration:__**\n${ram}MB Ram\n${disk}MB Disk\n${cpu}% CPU`,
                       color: hexToDecimal("#ffff00")
                   }
               ]
