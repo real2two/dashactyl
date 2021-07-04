@@ -6,6 +6,8 @@ Dashactyl is a client area, which allows users to split resources throughout mul
 
 Dashactyl is developed by the community and people. Check out the Discord: https://discord.gg/yEv2KhVbWX
 
+Website: https://dashactyl.com
+
 # Wiki
 
 Need to install Dashactyl? Need API documentations? Need a place to find themes?
