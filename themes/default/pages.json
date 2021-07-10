@@ -22,6 +22,7 @@
         "setresources": "/admin",
         "failedsetresources": "/admin",
         "renewserver": "/servers",
+        "failedrenewserver": "/servers",
         "setcoins": "/admin",
         "failedsetcoins": "/admin",
         "purchaseram": "/store",

@@ -78,9 +78,23 @@ module.exports.load = async function(app, db) {
                 };
 
                 if (current.ram > plan.ram || current.disk > plan.disk || current.cpu > plan.cpu || current.servers > plan.servers) {
-                    return res.send("You could not renew this server, because your servers are exceeding your plan.");
+                    return res.send(theme.settings.redirect.failedrenewserver + "?err=EXCEEDSPLAN");
                 };
             };
+
+            let cost = settings.api.client.allow.renewsuspendsystem.cost;
+
+            let usercoins = await db.get("coins-" + req.session.userinfo.id) || 0;
+
+            if (usercoins < cost) return res.redirect(theme.settings.redirect.failedrenewserver + "?err=CANNOTAFFORD");
+
+            let newusercoins = usercoins - cost;
+
+            if (newusercoins == 0) {
+                await db.delete("coins-" + req.session.userinfo.id);
+            } else {
+                await db.set("coins-" + req.session.userinfo.id, newusercoins);
+            }
 
             
             renewalservers[req.query.id] = settings.api.client.allow.renewsuspendsystem.time;
