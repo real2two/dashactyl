@@ -11,7 +11,7 @@ Currently, the following versions below are currently being supported with secur
 
 ## Reporting a Vulnerability
 
-In order to report a vulnerability, you should join our Discord server ( https://discord.gg/YZNrJ649fJ ), and DM @Two#1106 about the vulnerability.
+In order to report a vulnerability, you should join our Discord server ( https://discord.gg/YZNrJ649fJ ), and DM @Two#3864 about the vulnerability.
 
 Use this section to tell people how to report a vulnerability.
 
