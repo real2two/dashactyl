@@ -61,6 +61,101 @@ module.exports.load = async function(app, db) {
             coins: newsettings.api.client.coins.enabled ? (await db.get("coins-" + req.params.id) ? await db.get("coins-" + req.params.id) : 0) : null
         });
     });
+    
+    app.post('/api/createserver', async (req, res) => {
+        const settings = await check(req, res);
+        if (!settings) return;
+        
+        if (typeof req.body !== 'object') return res.json({ status: 'body must be an object' });
+        if (Array.isArray(req.body)) return res.json({ status: 'body cannot be an array' });
+        
+        if (!settings.api.client.allow.server.create) return res.json({ status: 'server creation is disabled' });
+        
+        if (!req.body.userid) return res.json({ status: 'missing userid' });
+        if (!req.body.name) return res.json({ status: 'missing server name' });
+        if (!req.body.ram) return res.json({ status: 'missing server ram' });
+        if (!req.body.disk) return res.json({ status: 'missing server disk' });
+        if (!req.body.cpu) return res.json({ status: 'missing server cpu' });
+        if (!req.body.egg) return res.json({ status: 'missing server egg' });
+        if (!req.body.location) return res.json({ status: 'missing server location' });
+        
+        let { userid, name, ram, disk, cpu, egg, location } = req.body;
+        const user = await db.get(`users-${userid}`);
+        if (!user) return res.json({ status: 'invalid userid' });
+        
+        ram = parseFloat(ram);
+        disk = parseFloat(disk);
+        cpu = parseFloat(cpu);
+        if (isNaN(ram) || isNaN(disk) || isNaN(cpu)) return res.json({ status: 'ram, disk, or cpu is not a number' });
+        
+        const extra = await db.get(`extra-${userid}`) || default_package;
+        const packagename = await db.get(`package-${userid}`);
+        const package = settings.api.client.packages.list[packagename || settings.api.client.packages.default];
+        
+        let newram = 0, newdisk = 0, newcpu = 0;
+        let newsevers = user.userinfo.attributes.relationships.servers.data.length;
+        if (newservers >= package.servers + extra.servers) return res.json({ status: 'user has reached the max servers limit' });
+        
+        const fetchedlocation = Object.entries(settings.api.client.locations)
+            .filter(name => name[0] === location);
+        if (fetchedlocation.length !== 1) return res.json({ status: 'invalid server location' });
+        
+        user.userinfo.attributes.relationships.servers.data.forEach(a => {
+            newram += a.attributes.limits.memory;
+            newdisk += a.attributes.limits.disk;
+            mewcpu += a.attributes.limits.cpu;
+        });
+        
+        const requiredpackage = fetchedlocation[0][1].package;
+        if (
+            requiredpackage &&
+            !requiredpackage.includes((packagename || settings.api.client.packages.default))
+        ) return res.json({ status: 'location for premium only' });
+        
+        const egginfo = settings.api.client.eggs[egg];
+        if (!egginfo) return res.json({ status: 'invalid egg' });
+        
+        if (newram + ram > package.ram + extra.ram) return res.json({ status: `exceeded ram amount by ${(package.ram + extra.ram) - newram}` });
+        if (newdisk + disk > package.disk + extra.disk) return res.json({ status: `exceeded disk amount by ${(package.disk + extra.disk) - newdisk}` });
+        if (newcpu + cpu > package.cpu + extra.cpu) return res.json({ status: `exceeded cpu amount by ${(package.cpu + extra.cpu) - newcpu}` });
+        if (egginfo.maximum) {
+            if (ram > egginfo.maximum.ram) return res.json({ status: 'exceeded maximum ram for egg' });
+            if (disk > egginfo.maximum.disk) return res.json({ status: 'exceeded maximum disk for egg' });
+            if (cpu > egginfo.maximum.cpu) return res.json({ status: 'exceeded maximum cpu for egg' });
+        }
+        if (egginfo.minimum) {
+            if (ram < egginfo.minimum.ram) return res.json({ status: 'too little ram for egg' });
+            if (disk < egginfo.minimum.disk) return res.json({ status: 'too little disk for egg' });
+            if (cpu < egginfo.minimum.cpu) return res.json({ status: 'too little cpu for egg' });
+        }
+        
+        let specs = egginfo.info;
+        specs.user = user;
+        if (!specs.limits) specs.limits = { swaps: 0, io: 500, backups: 0 };
+        specs.name = name;
+        specs.limits.memory = ram;
+        specs.limits.disk = disk;
+        specs.limits.cpu = cpu;
+        if (!specs.deploy) specs.deploy = { locations: [location], dedicated_ip: false, port_range: [] };
+        
+        const serverinfo = await fetch(
+            `${settings.pterodactyl.domain}/api/application/servers`, {
+                method: 'POST',
+                body: JSON.stringify(specs),
+                headers:{
+                    'Authorization': `Bearer ${settings.pterodactyl.key}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            }
+        );
+        const json = await serverinfo.json();
+        if (!serverinfo.ok) {
+            console.log(json);
+            return res.json({ status: 'error on create', code: serverinfo.statusCode });
+        }
+        return res.json({ status: 'success', data: json });
+    }
 
     app.post("/api/setcoins", async (req, res) => {
         const settings = await check(req, res);
