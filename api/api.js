@@ -160,7 +160,7 @@ module.exports.load = async function(app, db) {
         res.send({ status: "success" });
     });
 
-    app.post("/api/setplan", async (req, res) => {
+    app.patch("/api/setplan", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
 
@@ -233,6 +233,22 @@ module.exports.load = async function(app, db) {
             res.send({ status: "missing variables" });
         }
     });
+    
+    app.get('/api/coupons', async (req, res) => {
+        const settings = await check(req, res);
+        if (!settings) return;
+        
+        if (req.query.code) {
+            const { code } = req.query;
+            if (!/^[a-z0-9]+$/i.test(code)) return res.json({ status: 'invalid coupon code' });
+            if (!(await db.get(`coupon-${code}`))) return res.json({ status: 'invalid coupon code' });
+            const coupon = await db.get(`coupon-${code}`);
+            return res.json({ status: 'success', coupon });
+        }
+        
+        const coupons = await db.get('coupon');
+        return res.json({ status: 'success', coupons });
+    }
 
     app.post("/api/createcoupon", async (req, res) => {
         let settings = await check(req, res);
