@@ -284,7 +284,7 @@ module.exports.load = async function(app, db) {
         return res.json({ status: "success", code: code });
     });
 
-    app.delete("/api/revokecoupon/:id", async (req, res) => {
+    app.delete("/api/revokecoupon/:code", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
 
