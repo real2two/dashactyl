@@ -17,7 +17,7 @@ module.exports.load = async function(app, db) {
         if (!settings) return;
         if (!req.params.id) return res.json({ status: "missing id" });
 
-        if (!(await db.get("users-" + req.params.id))) return res.send({ status: "invalid id" });
+        if (!(await db.get("users-" + req.params.id))) return res.json({ status: "invalid id" });
         let newsettings = JSON.parse(fs.readFileSync("./settings.json").toString());
 
         if (newsettings.api.client.oauth2.link.slice(-1) == "/")
@@ -47,7 +47,7 @@ module.exports.load = async function(app, db) {
             console.log("[WEBSITE] An error has occured while attempting to get a user's information");
             console.log("- Discord ID: " + req.params.id);
             console.log("- Pterodactyl Panel ID: " + pterodactylid);
-            return res.send({ status: "could not find user on panel" });
+            return res.json({ status: "could not find user on panel" });
         }
         let userinfo = await userinforeq.json();
 
