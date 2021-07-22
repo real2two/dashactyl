@@ -156,6 +156,35 @@ module.exports.load = async function(app, db) {
         }
         return res.json({ status: 'success', data: json });
     }
+    
+    app.delete('/api/deleteserver/:userid/:serverid', async (req, res) => {
+        const settings = await check(req, res);
+        if (!settings) return;
+        
+        if (!req.params.userid) return res.json({ status: 'missing user id });
+        if (!req.params.serverid) return res.json({ status: 'missing server id' });
+        if (typeof req.params.userid !== 'string') return res.json({ status: 'user id must be a string' });
+        if (typeof req.params.serverid !== 'string') return res.json({ status: 'server id must be a string' });
+        if (!settings.api.client.allow.server.delete) return res.json({ status: 'server deletion is disabled' });
+        
+        const { userid, serverid } = req.params;
+        const user = await db.get(`users-${userid}`);
+        if (!user) return res.json({ status: 'invalid userid' });
+        const servers = user.userinfo.relationships.servers.data;
+        if (!data.some(s => s.attributes.id === serverid)) return res.json({ status: 'server with that id not found' });
+        
+        const result = await fetch(
+            `${settings.pterodactyl.domain}/api/application/servers/${serverid}`, {
+                method: 'DELETE',
+                headers:{
+                    'Authorization': `Bearer ${settings.pterodactyl.key}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        if (!result.ok) return res.json({ status: 'error on delete', code: result.statusCode });
+        return res.json({ status: 'success' });
+    }
 
     app.post("/api/setcoins", async (req, res) => {
         const settings = await check(req, res);
