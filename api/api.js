@@ -9,13 +9,13 @@ module.exports.load = async function(app, db) {
     app.get("/api", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
-        res.send({ "status": true });
+        res.json({ "status": true });
     });
 
     app.get("/api/userinfo/:id", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
-        if (!req.params.id) return res.send({ status: "missing id" });
+        if (!req.params.id) return res.json({ status: "missing id" });
 
         if (!(await db.get("users-" + req.params.id))) return res.send({ status: "invalid id" });
         let newsettings = JSON.parse(fs.readFileSync("./settings.json").toString());
@@ -51,7 +51,7 @@ module.exports.load = async function(app, db) {
         }
         let userinfo = await userinforeq.json();
 
-        res.send({
+        return res.json({
             status: "success",
             package,
             extra: await db.get("extra-" + req.params.id)
@@ -161,16 +161,16 @@ module.exports.load = async function(app, db) {
         const settings = await check(req, res);
         if (!settings) return;
 
-        if (typeof req.body !== "object") return res.send({ status: "body must be an object" });
-        if (Array.isArray(req.body)) return res.send({ status: "body cannot be an array" });
+        if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
+        if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
 
         let id = req.body.id;
         let coins = req.body.coins;
 
-        if (typeof id !== "string") return res.send({status: "id must be a string"});
-        if (typeof coins !== 'number') return res.send({ status: 'coins must be a number' });
-        if (!(await db.get("users-" + id))) return res.send({ status: "invalid id" });
-        if (coins < 0 || coins > 999999999999999) return res.send({ status: "too small or big coins" });
+        if (typeof id !== "string") return res.json({status: "id must be a string"});
+        if (typeof coins !== 'number') return res.json({ status: 'coins must be a number' });
+        if (!(await db.get("users-" + id))) return res.json({ status: "invalid id" });
+        if (coins < 0 || coins > 999999999999999) return res.json({ status: "too small or big coins" });
 
         if (coins == 0) {
         await db.delete("coins-" + id)
@@ -178,26 +178,26 @@ module.exports.load = async function(app, db) {
         await db.set("coins-" + id, coins);
         }
 
-        res.send({ status: "success" });
+        return res.json({ status: "success" });
     });
 
     app.post("/api/addcoins", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
 
-        if (typeof req.body !== "object") return res.send({ status: "body must be an object" });
-        if (Array.isArray(req.body)) return res.send({ status: "body cannot be an array" });
+        if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
+        if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
 
         let id = req.body.id;
         let coins = req.body.coins;
 
-        if (typeof id !== "string") return res.send({ status: "id must be a string" });
-        if (typeof coins !== "number") return res.send({ status: "coins must be number" });
-        if (!(await db.get("users-" + id))) return res.send({ status: "invalid id" });
+        if (typeof id !== "string") return res.json({ status: "id must be a string" });
+        if (typeof coins !== "number") return res.json({ status: "coins must be number" });
+        if (!(await db.get("users-" + id))) return res.json({ status: "invalid id" });
 
         let currentcoins = await db.get("coins-" + id) || 0;
         coins += currentcoins;
-        if (coins < 0 || coins > 999999999999999) return res.send({ status: "too small or big coins" });
+        if (coins < 0 || coins > 999999999999999) return res.json({ status: "too small or big coins" });
 
         if (coins == 0) {
         await db.delete("coins-" + id);
@@ -205,18 +205,18 @@ module.exports.load = async function(app, db) {
         await db.set("coins-" + id, coins);
         }
 
-        res.send({ status: "success" });
+        return res.json({ status: "success" });
     });
 
     app.delete("/api/removeaccount/:id", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
 
-        if (!req.params.id) return res.send({ status: 'missing id' });
+        if (!req.params.id) return res.json({ status: 'missing id' });
         let id = req.params.id;
-        if (typeof id !== "string") return res.send({ status: "id must be a string" });
+        if (typeof id !== "string") return res.json({ status: "id must be a string" });
 
-        if (!(await db.get("users-" + id))) return res.send({status: "invalid id"});
+        if (!(await db.get("users-" + id))) return res.json({status: "invalid id"});
         let discordid = id;
         let pteroid = await db.get("users-" + discordid);
 
@@ -252,28 +252,28 @@ module.exports.load = async function(app, db) {
         await db.delete("extra-" + discordid);
         await db.delete("package-" + discordid);
 
-        res.send({ status: "success" });
+        return res.json({ status: "success" });
     });
 
     app.patch("/api/setplan", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
 
-        if (typeof req.body !== "object") return res.send({ status: "body must be an object" });
-        if (Array.isArray(req.body)) return res.send({ status: "body cannot be an array" });
-        if (typeof req.body.id !== "string") return res.send({ status: "missing id" });
-        if (!(await db.get("users-" + req.body.id))) return res.send({ status: "invalid id" });
+        if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
+        if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
+        if (typeof req.body.id !== "string") return res.json({ status: "missing id" });
+        if (!(await db.get("users-" + req.body.id))) return res.json({ status: "invalid id" });
 
         if (typeof req.body.package !== "string") {
             await db.delete("package-" + req.body.id);
             adminjs.suspend(req.body.id);
-            return res.send({status: "success"});
+            return res.json({status: "success"});
         } else {
             let newsettings = JSON.parse(fs.readFileSync("./settings.json").toString());
-            if (!newsettings.api.client.packages.list[req.body.package]) return res.send({ status: "invalid package" });
+            if (!newsettings.api.client.packages.list[req.body.package]) return res.json({ status: "invalid package" });
             await db.set("package-" + req.body.id, req.body.package);
             adminjs.suspend(req.body.id);
-            return res.send({ status: "success" });
+            return res.json({ status: "success" });
         }
     });
 
@@ -281,10 +281,10 @@ module.exports.load = async function(app, db) {
         let settings = await check(req, res);
         if (!settings) return;
 
-        if (typeof req.body !== "object") return res.send({ status: "body must be an object" });
-        if (Array.isArray(req.body)) return res.send({ status: "body cannot be an array" });
-        if (typeof req.body.id !== "string") return res.send({ status: "missing id" });
-        if (!(await db.get("users-" + req.body.id))) res.send({ status: "invalid id" });
+        if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
+        if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
+        if (typeof req.body.id !== "string") return res.json({ status: "missing id" });
+        if (!(await db.get("users-" + req.body.id))) res.json({ status: "invalid id" });
 
         if (typeof req.body.ram == "number" || typeof req.body.disk == "number" || typeof req.body.cpu == "number" || typeof req.body.servers == "number") {
             let ram = req.body.ram;
@@ -301,19 +301,19 @@ module.exports.load = async function(app, db) {
             }
 
             if (typeof ram == "number") {
-                if (ram < 0 || ram > 999999999999999) return res.send({ status: "exceeded ram size" });
+                if (ram < 0 || ram > 999999999999999) return res.json({ status: "exceeded ram size" });
                 extra.ram = ram;
             }
             if (typeof disk == "number") {
-                if (disk < 0 || disk > 999999999999999) return res.send({ status: "exceeded disk size" });
+                if (disk < 0 || disk > 999999999999999) return res.json({ status: "exceeded disk size" });
                 extra.disk = disk;
             }
             if (typeof cpu == "number") {
-                if (cpu < 0 || cpu > 999999999999999) return res.send({ status: "exceeded cpu size" });
+                if (cpu < 0 || cpu > 999999999999999) return res.json({ status: "exceeded cpu size" });
                 extra.cpu = cpu;
             }
             if (typeof servers == "number") {
-                if (servers < 0 || servers > 999999999999999) return res.send({ status: "exceeded server size" });
+                if (servers < 0 || servers > 999999999999999) return res.json({ status: "exceeded server size" });
                 extra.servers = servers;
             }
             if (extra.ram == 0 && extra.disk == 0 && extra.cpu == 0 && extra.servers == 0) {
@@ -323,9 +323,9 @@ module.exports.load = async function(app, db) {
             }
 
             adminjs.suspend(req.body.id);
-            return res.send({ status: "success" });
+            return res.json({ status: "success" });
         } else {
-            res.send({ status: "missing variables" });
+            return res.json({ status: "missing variables" });
         }
     });
     
@@ -349,8 +349,8 @@ module.exports.load = async function(app, db) {
         let settings = await check(req, res);
         if (!settings) return;
 
-        if (typeof req.body !== "object") return res.send({ status: "body must be an object" });
-        if (Array.isArray(req.body)) return res.send({ status: "body cannot be an array" });
+        if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
+        if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
         let code = typeof req.body.code == "string" ? req.body.code.slice(0, 200) : Math.random().toString(36).substring(2, 15);
         if (!code.match(/^[a-z0-9]+$/i)) return res.json({ status: "illegal characters" });
 
@@ -376,14 +376,14 @@ module.exports.load = async function(app, db) {
             servers: servers
         });
 
-        return res.json({ status: "success", code: code });
+        return res.json({ status: "success", code });
     });
 
     app.delete("/api/revokecoupon/:code", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return;
 
-        if (!req.params.code) return res.send({ status: 'missing code'});
+        if (!req.params.code) return res.json({ status: 'missing code'});
 
         let code = req.params.code;
         if (!code) return res.json({ status: "missing code" });
@@ -392,13 +392,13 @@ module.exports.load = async function(app, db) {
 
         await db.delete("coupon-" + code);
 
-        res.json({ status: "success" })
+        return res.json({ status: "success" })
     });
 
     async function check(req, res) {
         let settings = JSON.parse(fs.readFileSync("./settings.json").toString());
         if (settings.api.client.api.enabled) {
-            let auth = req.headers['authorization'];
+            let auth = req.headers['Authorization'];
             if (auth) {
                 if (auth == "Bearer " + settings.api.client.api.code) return settings;
             };
@@ -413,10 +413,9 @@ module.exports.load = async function(app, db) {
                 if (err) {
                     console.log(`[WEBSITE] An error has occured on path ${req._parsedUrl.pathname}:`);
                     console.log(err);
-                    return res.send("An error has occured while attempting to load this page. Please contact an administrator to fix this.");
+                    return res.json("An error has occured while attempting to load this page. Please contact an administrator to fix this.");
                 };
-                res.status(404);
-                res.send(str);
+                res.status(404).json(str);
             }
         );
         return null;
