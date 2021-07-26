@@ -66,7 +66,7 @@ module.exports.load = async function(app, db) {
         if (await db.get(`users-${username}`)) return res.json({ status: 'account already exists' });
 
         let password = req.body?.password;
-        if (!password) password = make(8);
+        if (!password) password = make(settings.api.client.api.passwordgenerator.length ?? 8);
         const payload = {
             username,
             email,
