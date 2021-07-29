@@ -10,7 +10,7 @@ module.exports.load = async function(app, db) {
     app.get("/api", async (req, res) => {
         const settings = await check(req, res);
         if (!settings) return res.status(503).json(ERR_503);
-        res.json({ status: true });
+        return res.json({ status: true });
     });
 
     app.get('/api/users/:id', async (req, res) => {
@@ -217,7 +217,7 @@ module.exports.load = async function(app, db) {
 
     app.post('/api/users/:id/servers', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (!req.params.id) return res.json({ status: 'missing user id parameter' });
         if (typeof req.body !== 'object') return res.json({ status: 'body must be an object' });
