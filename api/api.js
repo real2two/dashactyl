@@ -4,18 +4,18 @@ const fs = require("fs");
 const ejs = require("ejs");
 const fetch = require('node-fetch');
 const default_package = { ram: 0, disk: 0, cpu: 0, servers: 0 };
-const ERR_403 = { status: 'dashactyl api is not enabled' };
+const ERR_503 = { status: 'dashactyl api is not enabled' };
 
 module.exports.load = async function(app, db) {
     app.get("/api", async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
         res.json({ status: true });
     });
 
     app.get('/api/users/:id', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return res.status(403).json(ERR_403);
+        if (!settings) return res.status(503).json(ERR_503);
         if (!req.params.id) return res.json({ status: "missing id" });
 
         const userid = await db.get(`users-${req.params.id}`);
@@ -50,7 +50,7 @@ module.exports.load = async function(app, db) {
 
     app.post('/api/users', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return res.status(403).json(ERR_403);
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (typeof req.body !== 'object') return res.json({ status: 'body must be an object' });
         if (Array.isArray(req.body)) return res.json({ status: 'body cannot be an array' });
@@ -92,7 +92,7 @@ module.exports.load = async function(app, db) {
 
     app.patch('/api/users/:id/plan', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return res.status(403).json(ERR_403);
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (!req.params.id) return res.json({ status: 'missing user id parameter' });
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
@@ -113,7 +113,7 @@ module.exports.load = async function(app, db) {
 
     app.patch('/api/users/:id/resources', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return res.status(403).json(ERR_403);
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (!req.params.id) return res.json({ status: 'missing user id parameter' });
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
@@ -170,7 +170,7 @@ module.exports.load = async function(app, db) {
 
     app.delete('/api/users/:id', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return res.status(403).json(ERR_403);
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (!req.params.id) return res.json({ status: 'missing id' });
         const { id } = req.params;
@@ -321,7 +321,7 @@ module.exports.load = async function(app, db) {
 
     app.delete('/api/users/:userid/servers/:serverid', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (!req.params.userid) return res.json({ status: 'missing user id' });
         if (!req.params.serverid) return res.json({ status: 'missing server id' });
@@ -362,7 +362,7 @@ module.exports.load = async function(app, db) {
 
     app.post("/api/setcoins", async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
         if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
@@ -411,7 +411,7 @@ module.exports.load = async function(app, db) {
 
     app.get('/api/coupons', async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (req.query.code) {
             const { code } = req.query;
@@ -428,7 +428,7 @@ module.exports.load = async function(app, db) {
 
     app.post("/api/coupons", async (req, res) => {
         let settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
         if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
@@ -462,7 +462,7 @@ module.exports.load = async function(app, db) {
 
     app.delete("/api/coupons/:code", async (req, res) => {
         const settings = await check(req, res);
-        if (!settings) return;
+        if (!settings) return res.status(503).json(ERR_503);
 
         if (!req.params.code) return res.json({ status: 'missing code' });
 
