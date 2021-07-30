@@ -1,7 +1,5 @@
-const indexjs = require("../index.js");
 const adminjs = require("./admin.js");
 const fs = require("fs");
-const ejs = require("ejs");
 const fetch = require('node-fetch');
 const default_package = { ram: 0, disk: 0, cpu: 0, servers: 0 };
 const ERR_503 = { status: 'dashactyl api is not enabled' };
@@ -475,28 +473,11 @@ module.exports.load = async function(app, db) {
     });
 
     async function check(req, res) {
-        let settings = JSON.parse(fs.readFileSync("./settings.json").toString());
+        const settings = JSON.parse(fs.readFileSync("./settings.json").toString());
         if (settings.api.client.api.enabled) {
-            let auth = req.headers['Authorization'];
-            if (auth) {
-                if (auth == "Bearer " + settings.api.client.api.code) return settings;
-            };
-        }
-        let theme = indexjs.get(req);
-        ejs.renderFile(
-            `./themes/${theme.name}/${theme.settings.notfound}`, 
-            await eval(indexjs.renderdataeval),
-            null,
-            function (err, str) {
-                delete req.session.newaccount;
-                if (err) {
-                    console.log(`[WEBSITE] An error has occured on path ${req._parsedUrl.pathname}:`);
-                    console.log(err);
-                    return res.json("An error has occured while attempting to load this page. Please contact an administrator to fix this.");
-                };
-                res.status(404).json(str);
-            }
-        );
+            const auth = req.headers['Authorization'];
+            if (auth && auth == "Bearer " + settings.api.client.api.code) return settings;
+        };
         return null;
     }
 
