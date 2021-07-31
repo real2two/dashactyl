@@ -1,21 +1,19 @@
 const adminjs = require("./admin.js");
-const fs = require("fs");
 const fetch = require('node-fetch');
 const default_package = { ram: 0, disk: 0, cpu: 0, servers: 0 };
-const ERR_503 = { status: 'dashactyl api is not enabled' };
 
 module.exports.load = async function(app, db) {
     app.get("/api", async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
         return res.json({ status: true });
     });
 
     app.get('/api/users/:id', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
-        if (!req.params.id) return res.json({ status: "missing id" });
+        const settings = check(req, res);
+        if (!settings) return;
 
+        if (!req.params.id) return res.json({ status: "missing id" });
         const userid = await db.get(`users-${req.params.id}`);
         if (!userid) return res.json({ status: "invalid user id" });
 
@@ -47,8 +45,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.post('/api/users', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (typeof req.body !== 'object') return res.json({ status: 'body must be an object' });
         if (Array.isArray(req.body)) return res.json({ status: 'body cannot be an array' });
@@ -89,8 +87,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.patch('/api/users/:id/plan', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (!req.params.id) return res.json({ status: 'missing user id parameter' });
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
@@ -110,8 +108,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.patch('/api/users/:id/resources', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (!req.params.id) return res.json({ status: 'missing user id parameter' });
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
@@ -167,8 +165,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.delete('/api/users/:id', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (!req.params.id) return res.json({ status: 'missing id' });
         const { id } = req.params;
@@ -214,8 +212,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.post('/api/users/:id/servers', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (!req.params.id) return res.json({ status: 'missing user id parameter' });
         if (typeof req.body !== 'object') return res.json({ status: 'body must be an object' });
@@ -318,8 +316,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.delete('/api/users/:userid/servers/:serverid', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (!req.params.userid) return res.json({ status: 'missing user id' });
         if (!req.params.serverid) return res.json({ status: 'missing server id' });
@@ -359,8 +357,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.post("/api/setcoins", async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
         if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
@@ -381,7 +379,7 @@ module.exports.load = async function(app, db) {
     });
 
     app.patch("/api/addcoins", async (req, res) => {
-        const settings = await check(req, res);
+        const settings = check(req, res);
         if (!settings) return;
 
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
@@ -408,8 +406,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.get('/api/coupons', async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (req.query.code) {
             const { code } = req.query;
@@ -425,8 +423,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.post("/api/coupons", async (req, res) => {
-        let settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (typeof req.body !== "object") return res.json({ status: "body must be an object" });
         if (Array.isArray(req.body)) return res.json({ status: "body cannot be an array" });
@@ -459,8 +457,8 @@ module.exports.load = async function(app, db) {
     });
 
     app.delete("/api/coupons/:code", async (req, res) => {
-        const settings = await check(req, res);
-        if (!settings) return res.status(503).json(ERR_503);
+        const settings = check(req, res);
+        if (!settings) return;
 
         if (!req.params.code) return res.json({ status: 'missing code' });
 
@@ -472,12 +470,17 @@ module.exports.load = async function(app, db) {
         return res.json({ status: "success" });
     });
 
-    async function check(req, res) {
-        const settings = JSON.parse(fs.readFileSync("./settings.json").toString());
+    function check(req, res) {
+        const settings = require('./settings.json');
+        if (!settings) {
+            res.status(503).json({ status: 'dashactyl api is unavailable' });
+            return null;
+        }
         if (settings.api.client.api.enabled) {
             const auth = req.headers['Authorization'];
-            if (auth && auth == "Bearer " + settings.api.client.api.code) return settings;
+            if (auth && auth === `Bearer ${settings.api.client.api.code}`) return settings;
         };
+        res.status(500).json({ status: 'dashactyl api is not enabled' });
         return null;
     }
 
@@ -485,7 +488,7 @@ module.exports.load = async function(app, db) {
         let result = '';
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         for (let i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * chars.length));
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return result;
     }
