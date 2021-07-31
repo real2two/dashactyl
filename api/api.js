@@ -477,7 +477,7 @@ module.exports.load = async function(app, db) {
             return null;
         }
         if (settings.api.client.api.enabled) {
-            const auth = req.headers['Authorization'];
+            const auth = req.headers['authorization'];
             if (auth && auth === `Bearer ${settings.api.client.api.code}`) return settings;
         };
         res.status(500).json({ status: 'dashactyl api is not enabled' });
