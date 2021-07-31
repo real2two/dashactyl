@@ -471,7 +471,7 @@ module.exports.load = async function(app, db) {
     });
 
     function check(req, res) {
-        const settings = require('./settings.json');
+        const settings = require('../settings.json');
         if (!settings) {
             res.status(503).json({ status: 'dashactyl api is unavailable' });
             return null;
