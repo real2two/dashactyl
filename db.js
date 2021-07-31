@@ -12,8 +12,8 @@ module.exports = {
         return row ? JSON.parse(row.value).value : undefined;
     },
     
-    async all(key, pattern) {
-        const row = await db.prepare('SELECT * FROM keyv WHERE key LIKE ?').all(`keyv:${key}`, `"${pattern}"`);
+    async all(pattern) {
+        const row = await db.prepare('SELECT * FROM keyv WHERE key LIKE ?').all(`"${pattern}"`);
         return row ? JSON.parse(row.value).value : undefined;
     },
 
