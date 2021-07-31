@@ -23,7 +23,7 @@ module.exports.load = async function(app, db) {
         package["name"] = packagename;
 
         const data = await fetch(
-            `${settings.pterodactyl.domain}/api/application/users${userid}?include=servers`, {
+            `${settings.pterodactyl.domain}/api/application/users/${userid}?include=servers`, {
                 method: "GET",
                 headers:{
                     'Authorization': `Bearer ${settings.pterodactyl.key}`,
@@ -233,7 +233,7 @@ module.exports.load = async function(app, db) {
         let user = await db.get(`users-${id}`);
         if (!user) return res.json({ status: 'invalid user id' });
         const userdata = await fetch(
-            `${settings.pterodactyl.domain}/api/application/users${user}?include=servers`, {
+            `${settings.pterodactyl.domain}/api/application/users/${user}?include=servers`, {
                 method: "GET",
                 headers:{
                     'Authorization': `Bearer ${settings.pterodactyl.key}`,
@@ -329,7 +329,7 @@ module.exports.load = async function(app, db) {
         let user = await db.get(`users-${userid}`);
         if (!user) return res.json({ status: 'invalid user id' });
         const userdata = await fetch(
-            `${settings.pterodactyl.domain}/api/application/users${user}?include=servers`, {
+            `${settings.pterodactyl.domain}/api/application/users/${user}?include=servers`, {
                 method: "GET",
                 headers:{
                     'Authorization': `Bearer ${settings.pterodactyl.key}`,
@@ -417,7 +417,7 @@ module.exports.load = async function(app, db) {
             return res.json({ status: 'success', coupon });
         }
 
-        const coupons = await db.get('coupon');
+        const coupons = await db.all('%coupon%');
         if (!coupons) return res.json({ status: 'no coupons found' });
         return res.json({ status: 'success', coupons });
     });
