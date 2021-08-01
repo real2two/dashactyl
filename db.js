@@ -13,7 +13,7 @@ module.exports = {
     },
     
     async all(pattern) {
-        const rows = await db.prepare('SELECT * FROM keyv WHERE key LIKE (?)').all(`"${pattern}"`);
+        const rows = await db.prepare('SELECT * FROM keyv WHERE key LIKE (?)').all(`"keyv:${pattern}"`);
         const parsed = [];
         rows.forEach(r => parsed.push(JSON.parse(r.value)));
         return parsed;
