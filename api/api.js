@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const default_package = { ram: 0, disk: 0, cpu: 0, servers: 0 };
 
 module.exports.load = async function(app, db) {
-    app.get("/api", async (req, res) => {
+    app.get("/api", (req, res) => {
         const settings = check(req, res);
         if (!settings) return;
         return res.json({ status: true });
@@ -62,7 +62,7 @@ module.exports.load = async function(app, db) {
         if (await db.get(`users-${username}`)) return res.json({ status: 'account already exists' });
 
         let password = req.body?.password;
-        if (!password) password = make(settings.api.client.api.passwordgenerator.length ?? 8);
+        if (!password) password = make(settings.api.client.api?.passwordgenerator?.length ?? 8);
         const payload = {
             username,
             email,
@@ -83,7 +83,14 @@ module.exports.load = async function(app, db) {
             }
         );
         if (!data.ok) return res.json({ status: 'error on account create', code: data.status });
-        return res.json({ status: 'success', data: await data.json() });
+        const json = await data.json();
+
+        await db.set(`users-${username}`, json.data.attributes.uuid);
+        await db.set(`coins-${username}`, 0);
+        await db.set(`package-${id}`, settings.api.client.packages.default);
+        await db.set(`extra-${id}`, default_package);
+
+        return res.json({ status: 'success', data: json });
     });
 
     app.patch('/api/users/:id/plan', async (req, res) => {
@@ -173,42 +180,41 @@ module.exports.load = async function(app, db) {
         if (typeof id !== "string") return res.json({ status: "id must be a string" });
 
         if (!(await db.get(`users-${id}`))) return res.json({ status: "invalid user id" });
-        let discordid = id;
-        let pteroid = await db.get("users-" + discordid);
+        const pteroId = await db.get(`users-${id}`);
 
-        // Remove IP.
-        let selected_ip = await db.get("ip-" + discordid);
-        if (selected_ip) {
-            let allips = await db.get("ips") || [];
-            allips = allips.filter(ip => ip !== selected_ip);
-
-            if (allips.length == 0) {
-                await db.delete("ips");
-            } else {
-                await db.set("ips", allips);
+        const result = await fetch(
+            `${settings.pterodactyl.domain}/api/application/users/${pteroId}`, {
+                method: 'DELETE',
+                headers:{
+                    'Authorization': `Bearer ${settings.pterodactyl.key}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
             }
+        );
+        if (result.status !== 204) return res.json({ status: 'error on deleting account', code: result.status });
 
-            await db.delete("ip-" + discordid);
+        const ip = await db.get(`ip-${id}`);
+        if (ip) {
+            let allips = await db.get('ips') || [];
+            allips = allips.filter(i => i !== ip);
+
+            if (!allips.length) await db.delete('ips'); else await db.set('ips', allips);
+
+            await db.delete(`ip-${id}`);
         }
 
-        // Remove user.
-        let userids = await db.get("users") || [];
-        userids = userids.filter(user => user !== pteroid);
+        let allusers = await db.get('users') || [];
+        allusers = allusers.filter(u => u !== pteroId);
 
-        if (userids.length == 0) {
-            await db.delete("users");
-        } else {
-            await db.set("users", userids);
-        }
+        if (!allusers.length) await db.delete('users'); else await db.set('users'. allusers);
 
-        await db.delete("users-" + discordid);
+        await db.delete(`users-${id}`);
+        await db.delete(`coins-${id}`);
+        await db.delete(`extra-${id}`);
+        await db.delete(`package-${id}`);
 
-        // Remove coins/resources.
-        await db.delete("coins-" + discordid);
-        await db.delete("extra-" + discordid);
-        await db.delete("package-" + discordid);
-
-        return res.json({ status: "success" });
+        return res.json({ status: 'success' });
     });
 
     app.post('/api/users/:id/servers', async (req, res) => {
@@ -417,8 +423,8 @@ module.exports.load = async function(app, db) {
             return res.json({ status: 'success', coupon });
         }
 
-        const coupons = await db.all('%coupon%');
-        if (!coupons) return res.json({ status: 'no coupons found' });
+        const coupons = await db.all('coupon-%');
+        if (!coupons?.length) return res.json({ status: 'no coupons found' });
         return res.json({ status: 'success', coupons });
     });
 
