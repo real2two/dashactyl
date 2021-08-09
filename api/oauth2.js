@@ -125,7 +125,7 @@ module.exports.load = async function(app, db) {
                 "servers": 0
             }
         if (newsettings.api.client.j4r.enabled == true) {
-            if (guildsinfo.message == '401: Unauthorized') return res.send("Please allow us to know what servers you are in to let the J4R system work properly.")
+            if (guildsinfo.message == '401: Unauthorized') return res.send("Please allow us to know what servers you are in to let the J4R system work properly")
         	await guildsinfo.forEach(async (guild) => {
                 if (newsettings.api.client.j4r.servers.indexOf(guild.id) >= 0) {
                     newj4r.cpu = newj4r.cpu + j4r.cpu
