@@ -54,7 +54,7 @@ module.exports.load = async function(app, db) {
 
       if (scopes.replace(/identify/g, "") == scopes) missingscopes.push("identify");
       if (scopes.replace(/email/g, "") == scopes) missingscopes.push("email");
-      if (newseetings.api.client.j4r.enabled) if (scopes.replace(/guilds/g, "") == scopes) missingscopes.push("email");
+      if (newseetings.api.client.j4r.enabled) if (scopes.replace(/guilds/g, "") == scopes) missingscopes.push("guilds");
       if (newsettings.api.client.bot.joinguild.enabled == true) if (scopes.replace(/guilds.join/g, "") == scopes) missingscopes.push("guilds.join");
       if (missingscopes.length !== 0) return res.redirect(failedcallback + "?err=MISSINGSCOPES&scopes=" + missingscopes.join("%20"));
       let userjson = await fetch(
