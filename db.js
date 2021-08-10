@@ -11,6 +11,13 @@ module.exports = {
 
         return row ? JSON.parse(row.value).value : undefined;
     },
+    
+    async all(pattern) {
+        const rows = await db.prepare('SELECT * FROM keyv WHERE "key" LIKE ?').all(`keyv:${pattern}`);
+        const parsed = [];
+        rows.forEach(r => parsed.push(JSON.parse(r.value)));
+        return parsed;
+    },
 
     async set(key, value) {
         await this.delete(key);
