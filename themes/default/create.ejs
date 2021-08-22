@@ -186,51 +186,57 @@
 				<div class="page-inner">
 					<div class="mt-2 mb-4">
 						<h2 class="text-white pb-2">Welcome back, <%= req.session.userinfo.username%>!</h2>
-                <% if (req.query.err) { %>
-                        <h5 class="text-white op-7 mb-4">
-                        <% if (req.query.err == "MISSINGVARIABLE") { %>
-                            You have not filled out all of the server information.
-                        <% } else if (req.query.err == "ERRORONMODIFY") { %>
-                            There has been an error while attempting to modifying your server. Please alert an administrator to fix this problem.
-                        <% } else if (req.query.err == "MISSINGEGG") { %>
-                            The server type for this server is not registered as a valid server type, therefore your server's RAM, disk and/or CPU could not be changed.
-                        <% } else { %>
-                            <% if (req.query.num) { %>
-                                <% if (!isNaN(parseFloat(req.query.num))) { %>
-                                    <% if (req.query.err == "TOOLITTLERAM" || req.query.err == "TOOLITTLEDISK" || req.query.err == "TOOLITTLECPU") { %>
-                                        You must make a server with at least <b><%= req.query.num %></b>
-                                        <% if (req.query.err.slice(-3) == "RAM") { %>
-                                            MB RAM
-                                        <% } else if (req.query.err.slice(-4) == "DISK") { %>
-                                            MB disk
-                                        <% } else { // CPU %>
-                                            % CPU
-                                        <% } %>
-                                        if you want to modified a server with the server type you have selected.
-                                    <% } else if (req.query.err == "TOOMUCHRAM" || req.query.err == "TOOMUCHDISK" || req.query.err == "TOOMUCHCPU") { %>
-                                        With the selected server type, you can have a maximum of <b><%= req.query.num %></b>
-                                        <% if (req.query.err.slice(-3) == "RAM") { %>
-                                            MB RAM
-                                        <% } else if (req.query.err.slice(-4) == "DISK") { %>
-                                            MB disk
-                                        <% } else { // CPU %>
-                                            % CPU
-                                        <% } %>
-                                        on the server.
-                                    <% } else if (req.query.err == "EXCEEDRAM" || req.query.err == "EXCEEDDISK" || req.query.err == "EXCEEDCPU") { %>
-                                        The server could not be modified because you have requested to modified a server that exceeds your plan.
-                                    <% } else { %>
-                                        I won't mind to add a little easter egg here. :)
-                                    <% } %>
-                                <% } else { %>
-                                    I won't mind to add a little easter egg here. :)
-                                <% } %>
-                            <% } else { %>
-                                I won't mind to add a little easter egg here. :)
-                            <% } %>
-                        <% } %>
-                        </h5>
-            <% } %>
+              <% if (settings.api.client.allow.server.create == true) { %>
+               <% if (req.query.err) { %>
+	<h5 class="text-white op-7 mb-4">
+		<% if (req.query.err == "MISSINGVARIABLE") { %>
+			You have not filled out all of the server information.
+		<% } else if (req.query.err == "NOTANUMBER") { %>
+			RAM, disk and CPU must be a number.
+		<% } else if (req.query.err == "ERRORONCREATE") { %>
+			There has been an error while attempting to create your server. Please alert an administrator to fix this problem.
+		<% } else if (req.query.err == "BIGSERVERNAME") { %>
+			Your server name must be less than <b>191</b> characters.
+		<% } else if (req.query.err == "TOOMUCHSERVERS") { %>
+			The server could not be created because you have requested to create a server that exceeds your plan.
+		<% } else if (req.query.err == "PREMIUMLOCATION") { %>
+			You cannot make a server on the selected location on your current package.
+		<% } else { %>
+			<% if (req.query.num) { %>
+				<% if (!isNaN(parseFloat(req.query.num))) { %>
+					<% if (req.query.err == "TOOLITTLERAM" || req.query.err == "TOOLITTLEDISK" || req.query.err == "TOOLITTLECPU") { %>
+						You must make a server with at least <b><%= req.query.num %></b>
+						<% if (req.query.err.slice(-3) == "RAM") { %>
+							MB RAM
+						<% } else if (req.query.err.slice(-4) == "DISK") { %>
+							MB disk
+						<% } else { // CPU %>
+							% CPU
+						<% } %>
+						if you want to create a server with the server type you have selected.
+					<% } else if (req.query.err == "TOOMUCHRAM" || req.query.err == "TOOMUCHDISK" || req.query.err == "TOOMUCHCPU") { %>
+						With the selected server type, you can have a maximum of <b><%= req.query.num %></b>
+						<% if (req.query.err.slice(-3) == "RAM") { %>
+							MB RAM
+						<% } else if (req.query.err.slice(-4) == "DISK") { %>
+							MB disk
+						<% } else { // CPU %>
+							% CPU
+						<% } %>
+						on the server.
+					<% } else if (req.query.err == "EXCEEDRAM" || req.query.err == "EXCEEDDISK" || req.query.err == "EXCEEDCPU") { %>
+						The server could not be created because you have requested to create a server that exceeds your plan.
+					<% } else { %>
+						I won't mind to add a little easter egg here. :)
+					<% } %>
+				<% } else { %>
+					I won't mind to add a little easter egg here. :)
+				<% } %>
+			<% } else { %>
+				I won't mind to add a little easter egg here. :)
+			<% } %>
+			</h5>
+		<% } %>
 					</div>
 					<div class="row">
 						<div class="col-sm-6 col-md-3">
