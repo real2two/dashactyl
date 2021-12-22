@@ -1,4 +1,4 @@
-# This repository is now archived and locked. Go to https://github.com/orgs/Dashactyl-Development/repositories for more update-to-date updates.
+# This repository is now archived and locked. Go to https://github.com/Votion-Development for more update-to-date updates.
 
 ---
 
